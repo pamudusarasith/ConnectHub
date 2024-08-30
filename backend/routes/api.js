@@ -1,11 +1,17 @@
 import express from "express";
-
-import db from "../db/connection.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  res.send("Welcome to ConnectHub API").status(200);
+router.post("/register", async (req, res) => {
+  try {
+    const { first_name, last_name, username, email, password } = req.body;
+    const user = new User({ first_name, last_name, username, email, password });
+    await user.save();
+    res.send({ message: "User registered successfully", success: true });
+  } catch (error) {
+    res.send({ message: Object.values(error.errors)[0].message, success: false });
+  }
 });
 
 export default router;
