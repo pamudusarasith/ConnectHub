@@ -13,17 +13,71 @@ import {
 } from "@mui/material";
 import { LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
 import { NavLink } from "react-router-dom";
+import { validateEmail } from "../utils";
 
 function RegisterPage() {
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    username: "",
+    email: "",
+    password: "",
+  });
+  const [invalidFields, setInvalidFields] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = () => {};
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    let isValid = true;
+    for (const key in formData) isValid &&= validateValue(key);
+
+    if (!isValid) return;
+
+    fetch("/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    })
+      .then((response) => {
+        response.json().then((data) => {
+          if (data.success) {
+            window.location.href = "/login";
+          } else {
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+
+  const validateValue = (name) => {
+    switch (name) {
+      case "email":
+        if (!validateEmail(formData.email))
+          setInvalidFields({ ...invalidFields, email: true });
+        else setInvalidFields({ ...invalidFields, email: false });
+        break;
+      default:
+        if (formData[name] === "")
+          setInvalidFields({ ...invalidFields, [name]: true });
+        else setInvalidFields({ ...invalidFields, [name]: false });
+    }
+
+    return invalidFields[name];
+  };
+
+  const handleBlur = (event) => validateValue(event.target.name);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
+
+    validateValue(name);
+  };
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
-
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
 
   return (
     <Container maxWidth="xs">
@@ -41,48 +95,76 @@ function RegisterPage() {
         <Typography component="h1" variant="h5">
           Sign up
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
                 autoComplete="given-name"
-                name="firstName"
-                required
-                fullWidth
+                error={invalidFields.first_name}
                 id="firstName"
                 label="First Name"
+                onBlur={handleBlur}
+                onChange={handleChange}
+                name="first_name"
+                value={formData.first_name}
                 autoFocus
+                fullWidth
+                required
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                required
-                fullWidth
+                autoComplete="family-name"
+                error={invalidFields.last_name}
                 id="lastName"
                 label="Last Name"
-                name="lastName"
-                autoComplete="family-name"
+                onBlur={handleBlur}
+                onChange={handleChange}
+                name="last_name"
+                value={formData.last_name}
+                fullWidth
+                required
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
-                required
+                autoComplete="username"
+                error={invalidFields.username}
+                id="username"
+                label="Username"
+                onBlur={handleBlur}
+                onChange={handleChange}
+                name="username"
+                value={formData.username}
                 fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                autoComplete="email"
+                error={invalidFields.email}
                 id="email"
                 label="Email Address"
+                onBlur={handleBlur}
+                onChange={handleChange}
                 name="email"
-                autoComplete="email"
+                value={formData.email}
+                fullWidth
+                required
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                id="password"
                 autoComplete="new-password"
+                error={invalidFields.password}
+                id="password"
+                label="Password"
+                onBlur={handleBlur}
+                onChange={handleChange}
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -90,21 +172,22 @@ function RegisterPage() {
                         aria-label="toggle password visibility"
                         edge="end"
                         onClick={handleClickShowPassword}
-                        onMouseDown={handleMouseDownPassword}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
+                fullWidth
+                required
               />
             </Grid>
           </Grid>
           <Button
-            type="submit"
-            fullWidth
-            variant="contained"
             sx={{ mt: 3, mb: 2 }}
+            type="submit"
+            variant="contained"
+            fullWidth
           >
             Sign Up
           </Button>
