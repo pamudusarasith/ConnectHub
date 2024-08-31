@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import {
   Container,
   Box,
@@ -12,69 +13,70 @@ import {
   IconButton,
 } from "@mui/material";
 import { LockOutlined, Visibility, VisibilityOff } from "@mui/icons-material";
-import { NavLink } from "react-router-dom";
-import { validateEmail } from "../utils";
+import { NavLink, useNavigate } from "react-router-dom";
+import { validateEmail, validateUsername } from "../utils";
 
 function RegisterPage() {
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
+    firstName: "",
+    lastName: "",
     username: "",
     email: "",
     password: "",
   });
-  const [invalidFields, setInvalidFields] = useState({});
+  const [isInvalid, setIsInvalid] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    let isValid = true;
-    for (const key in formData) isValid &&= validateValue(key);
+    let valid = true;
+    for (const key in formData) valid &&= validateValue(key, formData[key]);
 
-    if (!isValid) return;
+    if (!valid) return;
 
-    fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((response) => {
-        response.json().then((data) => {
-          if (data.success) {
-            window.location.href = "/login";
-          } else {
-          }
+    axios.post("/api/register", formData).then((response) => {
+      if (response.data.success) {
+        setFormData({
+          firstName: "",
+          lastName: "",
+          username: "",
+          email: "",
+          password: "",
         });
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+        setIsInvalid({});
+        navigate("/login");
+      } else {
+        setErrorMsg(response.data.message);
+      }
+    });
   };
 
-  const validateValue = (name) => {
+  const validateValue = (name, value) => {
+    let invalid = false;
     switch (name) {
       case "email":
-        if (!validateEmail(formData.email))
-          setInvalidFields({ ...invalidFields, email: true });
-        else setInvalidFields({ ...invalidFields, email: false });
+        if (!validateEmail(value)) invalid = true;
+        break;
+      case "username":
+        if (!validateUsername(value)) invalid = true;
         break;
       default:
-        if (formData[name] === "")
-          setInvalidFields({ ...invalidFields, [name]: true });
-        else setInvalidFields({ ...invalidFields, [name]: false });
+        if (value === "") invalid = true;
     }
-
-    return invalidFields[name];
+    setIsInvalid({ ...isInvalid, [name]: invalid });
+    return !invalid;
   };
 
-  const handleBlur = (event) => validateValue(event.target.name);
+  const handleBlur = (event) =>
+    validateValue(event.target.name, event.target.value);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
-
-    validateValue(name);
+    validateValue(name, value);
   };
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
@@ -97,16 +99,23 @@ function RegisterPage() {
         </Typography>
         <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
           <Grid container spacing={2}>
+            {errorMsg && (
+              <Grid item xs={12}>
+                <Typography color="error" sx={{ textTransform: "capitalize" }}>
+                  {errorMsg}
+                </Typography>
+              </Grid>
+            )}
             <Grid item xs={12} sm={6}>
               <TextField
                 autoComplete="given-name"
-                error={invalidFields.first_name}
+                error={isInvalid.firstName}
                 id="firstName"
                 label="First Name"
                 onBlur={handleBlur}
                 onChange={handleChange}
-                name="first_name"
-                value={formData.first_name}
+                name="firstName"
+                value={formData.firstName}
                 autoFocus
                 fullWidth
                 required
@@ -115,13 +124,13 @@ function RegisterPage() {
             <Grid item xs={12} sm={6}>
               <TextField
                 autoComplete="family-name"
-                error={invalidFields.last_name}
+                error={isInvalid.lastName}
                 id="lastName"
                 label="Last Name"
                 onBlur={handleBlur}
                 onChange={handleChange}
-                name="last_name"
-                value={formData.last_name}
+                name="lastName"
+                value={formData.lastName}
                 fullWidth
                 required
               />
@@ -129,7 +138,7 @@ function RegisterPage() {
             <Grid item xs={12}>
               <TextField
                 autoComplete="username"
-                error={invalidFields.username}
+                error={isInvalid.username}
                 id="username"
                 label="Username"
                 onBlur={handleBlur}
@@ -143,7 +152,7 @@ function RegisterPage() {
             <Grid item xs={12}>
               <TextField
                 autoComplete="email"
-                error={invalidFields.email}
+                error={isInvalid.email}
                 id="email"
                 label="Email Address"
                 onBlur={handleBlur}
@@ -157,7 +166,7 @@ function RegisterPage() {
             <Grid item xs={12}>
               <TextField
                 autoComplete="new-password"
-                error={invalidFields.password}
+                error={isInvalid.password}
                 id="password"
                 label="Password"
                 onBlur={handleBlur}

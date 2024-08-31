@@ -4,25 +4,37 @@ import bcrypt from "bcrypt";
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    required: [true, 'first name is required'],
+    required: [true, "first name is required"],
   },
   lastName: {
     type: String,
-    required: [true, 'last name is required'],
+    required: [true, "last name is required"],
   },
   username: {
     type: String,
     unique: true,
-    required: [true, 'username is required'],
+    required: [true, "username is required"],
+    validate: {
+      validator: function (v) {
+        return /^[a-zA-Z0-9_]{6,30}$/g.test(v);
+      },
+      message: "invalid username",
+    },
   },
   email: {
     type: String,
     unique: true,
-    required: [true, 'email is required'],
+    required: [true, "email is required"],
+    validate: {
+      validator: function (v) {
+        return /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(v);
+      },
+      message: "invalid email",
+    },
   },
   password: {
     type: String,
-    required: [true, 'password is required'],
+    required: [true, "password is required"],
   },
 });
 

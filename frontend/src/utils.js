@@ -3,4 +3,9 @@ function validateEmail(email) {
   return re.test(email);
 }
 
-export { validateEmail };
+function validateUsername(username) {
+  const re = /^[a-zA-Z0-9_]{6,30}$/g;
+  return re.test(username);
+}
+
+export { validateEmail, validateUsername };
