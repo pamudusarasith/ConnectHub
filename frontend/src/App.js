@@ -7,6 +7,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import RegisterPage from "./pages/Register";
 import LoginPage from "./pages/Login";
+import HomePage from "./pages/Home";
 
 function App() {
   const [theme, setTheme] = useState("light");
@@ -16,8 +17,9 @@ function App() {
       <div className="App">
         <CssBaseline />
         <BrowserRouter>
-          <NavBar />
+          <NavBar theme={theme} setTheme={setTheme} />
           <Routes>
+            <Route path="/" element={<HomePage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
           </Routes>

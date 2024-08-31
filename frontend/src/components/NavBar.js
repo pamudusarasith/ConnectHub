@@ -1,5 +1,7 @@
-import { styled, Button, Stack, Divider } from "@mui/material";
+import { styled, Button, Stack, Divider, IconButton } from "@mui/material";
+import { LightModeRounded, DarkModeRounded } from "@mui/icons-material";
 import { NavLink } from "react-router-dom";
+import { isLoggedIn, logout } from "../utils";
 
 const RoundButton = styled(Button)(({ theme }) => ({
   borderRadius: "20px",
@@ -12,7 +14,11 @@ const RoundButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-function NavBar() {
+function NavBar({ theme, setTheme }) {
+  const handleThemeChange = () => {
+    if (theme === "light") setTheme("dark");
+    else setTheme("light");
+  };
   return (
     <Stack direction={"column"}>
       <Stack
@@ -21,12 +27,20 @@ function NavBar() {
         direction={"row"}
         justifyContent={"flex-end"}
       >
-        <RoundButton component={NavLink} to="/login">
-          Log In
-        </RoundButton>
-        <RoundButton component={NavLink} to="/register">
-          Sign Up
-        </RoundButton>
+        {!isLoggedIn() && (
+          <>
+            <RoundButton component={NavLink} to="/login">
+              Log In
+            </RoundButton>
+            <RoundButton component={NavLink} to="/register">
+              Sign Up
+            </RoundButton>
+          </>
+        )}
+        {isLoggedIn() && <RoundButton onClick={logout}>Log Out</RoundButton>}
+        <IconButton onClick={handleThemeChange}>
+          {theme === "light" ? <DarkModeRounded /> : <LightModeRounded />}
+        </IconButton>
       </Stack>
       <Divider />
     </Stack>

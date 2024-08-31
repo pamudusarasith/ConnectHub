@@ -8,4 +8,12 @@ function validateUsername(username) {
   return re.test(username);
 }
 
-export { validateEmail, validateUsername };
+function isLoggedIn() {
+  return localStorage.getItem("token") !== null;
+}
+
+function logout() {
+  localStorage.removeItem("token");
+}
+
+export { validateEmail, validateUsername, isLoggedIn, logout };
