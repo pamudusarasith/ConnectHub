@@ -3,6 +3,13 @@ import { NavLink } from "react-router-dom";
 
 const RoundButton = styled(Button)(({ theme }) => ({
   borderRadius: "20px",
+  backgroundColor: theme.palette.secondary.main,
+  color: theme.palette.secondary.contrastText,
+  paddingInline: "20px",
+  paddingTop: "8px",
+  ":hover": {
+    backgroundColor: theme.palette.secondary.dark,
+  },
 }));
 
 function NavBar() {

@@ -1,11 +1,10 @@
 import express from "express";
-
-import db from "../db/connection.js";
+import auth from "./auth.js";
+import post from "./post.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  res.send("Welcome to ConnectHub API").status(200);
-});
+router.use("/", auth);
+router.use("/post", post);
 
 export default router;
