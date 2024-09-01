@@ -34,7 +34,7 @@ router.post("/login", async (req, res) => {
     }
     res.send({ success: false, message: "Invalid email or password" });
   } catch (error) {
-    res.send({ success: false, me_nssage: error.message });
+    res.send({ success: false, message: error.message });
   }
 });
 
