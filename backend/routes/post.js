@@ -5,7 +5,9 @@ import mongoose from "mongoose";
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-  const posts = await Post.find({}).sort({ createAt: -1 });
+  const posts = await Post.find({})
+    .populate({ path: "author", select: "firstName lastName username" })
+    .sort({ createAt: -1 });
 
   res.status(200).json(posts);
 });
@@ -27,13 +29,13 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const { threadId, content, authorId, createdAt, updatedAt } = req.body;
+  const { threadId, content, author, createdAt, updatedAt } = req.body;
 
   try {
     const post = await Post.create({
       threadId,
       content,
-      authorId,
+      author,
       createdAt,
       updatedAt,
     });
