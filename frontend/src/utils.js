@@ -1,3 +1,5 @@
+import axios from "axios";
+
 function validateEmail(email) {
   const re = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
   return re.test(email);
@@ -8,12 +10,9 @@ function validateUsername(username) {
   return re.test(username);
 }
 
-function isLoggedIn() {
-  return localStorage.getItem("token") !== null;
+function setAuthHeader() {
+  const token = localStorage.getItem("token");
+  if (token) axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 }
 
-function logout() {
-  localStorage.removeItem("token");
-}
-
-export { validateEmail, validateUsername, isLoggedIn, logout };
+export { validateEmail, validateUsername, setAuthHeader };
