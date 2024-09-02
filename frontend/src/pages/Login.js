@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   Container,
   TextField,
@@ -15,8 +15,12 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { AccountCircle, Visibility, VisibilityOff } from "@mui/icons-material";
 import { validateEmail } from "../utils";
 import axios from "axios";
+import { LoginStateCtx } from "../Contexts";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { isLoggedIn, setIsLoggedIn } = useContext(LoginStateCtx);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -24,7 +28,8 @@ const Login = () => {
   const [isInvalid, setIsInvalid] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const navigate = useNavigate();
+
+  if (isLoggedIn) return navigate("/");
 
   const validateValue = (name, value) => {
     let invalid = false;
@@ -66,6 +71,7 @@ const Login = () => {
         });
         setIsInvalid({});
         localStorage.setItem("token", response.data.token);
+        setIsLoggedIn(true);
         navigate("/");
       } else {
         setErrorMsg(response.data.message);
