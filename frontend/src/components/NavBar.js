@@ -5,6 +5,8 @@ import { RoundButton } from "./common";
 import { useContext } from "react";
 import { LoginStateCtx } from "../Contexts";
 import { useNavigate } from "react-router-dom";
+import CreateNewBtn from "./CreateNewBtn";
+import { jwtDecode } from "jwt-decode";
 
 function NavBar({ theme, setTheme }) {
   const navigate = useNavigate();
@@ -20,6 +22,19 @@ function NavBar({ theme, setTheme }) {
     localStorage.removeItem("token");
     navigate("/");
   };
+
+  if (isLoggedIn) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsLoggedIn(false);
+    } else {
+      const payload = jwtDecode(token);
+      if (payload.exp < Date.now() / 1000) {
+        setIsLoggedIn(false);
+        localStorage.removeItem("token");
+      }
+    }
+  }
 
   return (
     <Stack direction={"column"}>
@@ -39,7 +54,12 @@ function NavBar({ theme, setTheme }) {
             </RoundButton>
           </>
         )}
-        {isLoggedIn && <RoundButton onClick={logout}>Log Out</RoundButton>}
+        {isLoggedIn && (
+          <>
+            <CreateNewBtn />
+            <RoundButton onClick={logout}>Log Out</RoundButton>
+          </>
+        )}
         <IconButton onClick={handleThemeChange}>
           {theme === "light" ? <DarkModeRounded /> : <LightModeRounded />}
         </IconButton>

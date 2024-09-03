@@ -42,16 +42,17 @@ router.get("/:name", maybeAuthenticate, async (req, res) => {
   }
 
   let isMember = false;
+  let isOwner = false;
   if (req.user) {
     isMember = req.user?.joinedCommunities?.includes(community._id);
+    isOwner = req.user?._id.toString() === community.owner.toString();
   }
 
-  res.send({ success: true, data: { community, isMember } });
+  res.send({ success: true, data: { community, isMember, isOwner } });
 });
 
 router.put("/:name", authenticate, async (req, res) => {
   const { name } = req.params;
-  const { newName, newDescription } = req.body;
   const community = await Community.findOne({ name: name });
 
   if (!community) {
@@ -59,13 +60,13 @@ router.put("/:name", authenticate, async (req, res) => {
     return;
   }
 
-  if (req.user._id.toString() !== community.user.toString()) {
+  if (req.user._id.toString() !== community.owner.toString()) {
     res.send({ success: false, message: "Not authorized" });
     return;
   }
 
-  community.name = newName;
-  community.description = newDescription;
+  community.name = req.body.name;
+  community.description = req.body.description;
 
   await community.save();
 
@@ -81,12 +82,12 @@ router.delete("/:name", authenticate, async (req, res) => {
     return;
   }
 
-  if (req.user._id.toString() !== community.user.toString()) {
+  if (req.user._id.toString() !== community.owner.toString()) {
     res.send({ success: false, message: "Not authorized" });
     return;
   }
 
-  await community.delete();
+  await Community.deleteOne({ _id: community._id });
 
   res.send({ success: true });
 });

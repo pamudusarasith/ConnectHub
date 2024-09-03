@@ -14,11 +14,13 @@ import { LoginStateCtx } from "./Contexts";
 
 function App() {
   const [theme, setTheme] = useState("light");
-  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("token") !== null);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem("token") !== null
+  );
   setAuthHeader();
 
   return (
-    <LoginStateCtx.Provider value={{isLoggedIn, setIsLoggedIn}}>
+    <LoginStateCtx.Provider value={{ isLoggedIn, setIsLoggedIn }}>
       <ThemeProvider theme={theme === "light" ? lightTheme : darkTheme}>
         <div className="App">
           <CssBaseline />

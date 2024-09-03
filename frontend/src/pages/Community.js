@@ -12,9 +12,10 @@ import {
 import axios from "axios";
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { RoundButton, RoundButtonOutlined } from "../components/common.js";
-import { AddRounded, MoreHorizRounded } from "@mui/icons-material";
+import { RoundButton } from "../components/common.js";
+import { AddRounded } from "@mui/icons-material";
 import { LoginStateCtx } from "../Contexts";
+import CommunityMenuBtn from "../components/CommunityMenuBtn.js";
 
 function CommunityPage() {
   const { isLoggedIn } = useContext(LoginStateCtx);
@@ -59,23 +60,21 @@ function CommunityPage() {
               {data.community?.description}
             </Typography>
             <Stack spacing={2} direction="row" justifyContent="flex-end">
-              <RoundButtonOutlined>
+              <RoundButton variant="outlined">
                 <AddRounded />
                 <Typography variant="button">Post</Typography>
-              </RoundButtonOutlined>
+              </RoundButton>
               {data.isMember ? (
-                <RoundButtonOutlined onClick={handleLeave}>
+                <RoundButton variant="outlined" onClick={handleLeave}>
                   <Typography variant="button">Leave</Typography>
-                </RoundButtonOutlined>
+                </RoundButton>
               ) : (
                 <RoundButton onClick={handleJoin}>
                   <Typography variant="button">Join</Typography>
                 </RoundButton>
               )}
 
-              <RoundButtonOutlined>
-                <MoreHorizRounded />
-              </RoundButtonOutlined>
+              {data.isOwner && <CommunityMenuBtn data={data} />}
             </Stack>
           </Box>
         </Grid>

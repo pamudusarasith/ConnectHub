@@ -21,7 +21,7 @@ async function authenticate(req, res, next) {
     req.user = await User.findById(decoded.id);
     next();
   } catch (error) {
-    res.send({ success: false, message: "Invalid token" });
+    res.send({ success: false, code: 401, message: "Invalid token" });
   }
 }
 

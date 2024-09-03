@@ -1,26 +1,20 @@
 import { styled, Button } from "@mui/material";
 
-const RoundButton = styled(Button)(({ theme }) => ({
+const RoundButton = styled(Button)(({ variant, theme }) => ({
+  border: variant === "outlined" ? "solid 1px" : "none",
+  borderColor: variant === "outlined" ? theme.palette.primary.dark : "none",
   borderRadius: "20px",
-  backgroundColor: theme.palette.secondary.main,
   color: theme.palette.text.primary,
+  backgroundColor:
+    variant === "outlined" ? "transparent" : theme.palette.secondary.main,
   paddingInline: "20px",
   paddingTop: "8px",
   ":hover": {
-    backgroundColor: theme.palette.secondary.dark,
+    backgroundColor:
+      variant === "outlined"
+        ? theme.palette.primary.dark
+        : theme.palette.secondary.dark,
   },
 }));
 
-const RoundButtonOutlined = styled(Button)(({ theme }) => ({
-  border: "solid 1px",
-  borderColor: theme.palette.primary.dark,
-  borderRadius: "20px",
-  color: theme.palette.text.primary,
-  paddingInline: "20px",
-  paddingTop: "8px",
-  ":hover": {
-    backgroundColor: theme.palette.primary.dark,
-  },
-}));
-
-export { RoundButton, RoundButtonOutlined };
+export { RoundButton };
