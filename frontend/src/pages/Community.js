@@ -8,6 +8,7 @@ import {
   ListItem,
   ListItemText,
   Stack,
+  Dialog,
 } from "@mui/material";
 import axios from "axios";
 import { useState, useEffect, useContext } from "react";
@@ -16,12 +17,14 @@ import { RoundButton } from "../components/common.js";
 import { AddRounded } from "@mui/icons-material";
 import { LoginStateCtx } from "../Contexts";
 import CommunityMenuBtn from "../components/CommunityMenuBtn.js";
+import PostForm from "../components/PostForm.js";
 
 function CommunityPage() {
   const { isLoggedIn } = useContext(LoginStateCtx);
   const { name } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState({});
+  const [openPost, setOpenPost] = useState(false);
 
   useEffect(() => {
     axios.get(`/api/community/${name}`).then((res) => {
@@ -60,7 +63,7 @@ function CommunityPage() {
               {data.community?.description}
             </Typography>
             <Stack spacing={2} direction="row" justifyContent="flex-end">
-              <RoundButton variant="outlined">
+              <RoundButton variant="outlined" onClick={() => setOpenPost(true)}>
                 <AddRounded />
                 <Typography variant="button">Post</Typography>
               </RoundButton>
@@ -76,6 +79,9 @@ function CommunityPage() {
 
               {data.isOwner && <CommunityMenuBtn data={data} />}
             </Stack>
+            <Dialog open={openPost} onClose={() => setOpenPost(false)}>
+              <PostForm setOpen={setOpenPost} />
+            </Dialog>
           </Box>
         </Grid>
 
