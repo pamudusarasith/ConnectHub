@@ -1,18 +1,41 @@
-import { styled, Button, Stack, Divider } from "@mui/material";
+import { Stack, Divider, IconButton } from "@mui/material";
+import { LightModeRounded, DarkModeRounded } from "@mui/icons-material";
 import { NavLink } from "react-router-dom";
+import { RoundButton } from "./common";
+import { useContext } from "react";
+import { LoginStateCtx } from "../Contexts";
+import { useNavigate } from "react-router-dom";
+import CreateNewBtn from "./CreateNewBtn";
+import { jwtDecode } from "jwt-decode";
 
-const RoundButton = styled(Button)(({ theme }) => ({
-  borderRadius: "20px",
-  backgroundColor: theme.palette.secondary.main,
-  color: theme.palette.secondary.contrastText,
-  paddingInline: "20px",
-  paddingTop: "8px",
-  ":hover": {
-    backgroundColor: theme.palette.secondary.dark,
-  },
-}));
+function NavBar({ theme, setTheme }) {
+  const navigate = useNavigate();
+  const { isLoggedIn, setIsLoggedIn } = useContext(LoginStateCtx);
 
-function NavBar() {
+  const handleThemeChange = () => {
+    if (theme === "light") setTheme("dark");
+    else setTheme("light");
+  };
+
+  const logout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
+  if (isLoggedIn) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsLoggedIn(false);
+    } else {
+      const payload = jwtDecode(token);
+      if (payload.exp < Date.now() / 1000) {
+        setIsLoggedIn(false);
+        localStorage.removeItem("token");
+      }
+    }
+  }
+
   return (
     <Stack direction={"column"}>
       <Stack
@@ -21,12 +44,25 @@ function NavBar() {
         direction={"row"}
         justifyContent={"flex-end"}
       >
-        <RoundButton component={NavLink} to="/login">
-          Log In
-        </RoundButton>
-        <RoundButton component={NavLink} to="/register">
-          Sign Up
-        </RoundButton>
+        {!isLoggedIn && (
+          <>
+            <RoundButton component={NavLink} to="/login">
+              Log In
+            </RoundButton>
+            <RoundButton component={NavLink} to="/register">
+              Sign Up
+            </RoundButton>
+          </>
+        )}
+        {isLoggedIn && (
+          <>
+            <CreateNewBtn />
+            <RoundButton onClick={logout}>Log Out</RoundButton>
+          </>
+        )}
+        <IconButton onClick={handleThemeChange}>
+          {theme === "light" ? <DarkModeRounded /> : <LightModeRounded />}
+        </IconButton>
       </Stack>
       <Divider />
     </Stack>
