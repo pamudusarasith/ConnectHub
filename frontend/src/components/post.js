@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState} from "react";
 import {
   Card,
   CardHeader,
@@ -9,11 +9,14 @@ import {
   Typography,
   Menu,
   MenuItem,
+  Dialog
 } from "@mui/material";
+import PostForm from './PostForm';
 import { ThumbUp, Comment,MoreVert } from "@mui/icons-material";
 
-function Post(post) {
+function Post({post}) {
   const [anchorE1, setAnchorE1] = useState(null);
+  const [openPostForm,setOpenPostForm]=useState(false);
 
   const handelMenuOpen = (event) => {
     setAnchorE1(event.currentTarget);
@@ -22,6 +25,18 @@ function Post(post) {
   const handelMenuClose = () => {
     setAnchorE1(null);
   };
+
+  const handelDeleteClick = async () => {
+    const response = await fetch('/api/post/'+ post._id ,{
+        method:'DELETE'
+    })
+    const json = await response.json()
+
+    if(response.ok){
+        window.location.reload()
+    }
+  }
+  console.log(post)
   return (
     <Card sx={{ maxWidth: "100%" }}>
       <CardHeader
@@ -60,9 +75,21 @@ function Post(post) {
           open={Boolean(anchorE1)}
           onClose={handelMenuClose}
         >
-          <MenuItem onClick={handelMenuClose}> Update</MenuItem>
-          <MenuItem onClick={handelMenuClose}>Delete</MenuItem>
+          <MenuItem onClick={() => {
+            handelMenuClose();
+            setOpenPostForm(true);
+          }
+            
+
+          }> Update</MenuItem>
+          <MenuItem onClick={handelDeleteClick}>Delete</MenuItem>
         </Menu>
+        <Dialog
+        open={openPostForm}
+        onClose={() => setOpenPostForm(false)}
+      >
+        <PostForm setOpen={setOpenPostForm} post={post} />
+      </Dialog>
       </CardActions>
     </Card>
   );

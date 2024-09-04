@@ -4,14 +4,13 @@ const Schema = mongoose.Schema;
 
 const postSchema = new Schema(
   {
-    threadId: {
+    community: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Community",
+    },
+    title: {
       type: String,
       required: true,
-    },
-    title:{
-      type:String,
-      required: true,
-
     },
     content: {
       type: String,
@@ -19,9 +18,8 @@ const postSchema = new Schema(
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
-      ref:"User",
+      ref: "User",
     },
-    
   },
   { timestamps: true }
 );
