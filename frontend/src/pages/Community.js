@@ -63,21 +63,22 @@ function CommunityPage() {
               {data.community?.description}
             </Typography>
             <Stack spacing={2} direction="row" justifyContent="flex-end">
-              <RoundButton variant="outlined" onClick={() => setOpenPost(true)}>
-                <AddRounded />
-                <Typography variant="button">Post</Typography>
-              </RoundButton>
               {data.isMember ? (
-                <RoundButton variant="outlined" onClick={handleLeave}>
-                  <Typography variant="button">Leave</Typography>
-                </RoundButton>
+                <>
+                  <RoundButton variant="outlined" onClick={() => setOpenPost(true)}>
+                    <AddRounded />
+                    <Typography variant="button">Post</Typography>
+                  </RoundButton>
+                  <RoundButton variant="outlined" onClick={handleLeave}>
+                    <Typography variant="button">Leave</Typography>
+                  </RoundButton>
+                  {data.isOwner && <CommunityMenuBtn data={data} />}
+                </>
               ) : (
                 <RoundButton onClick={handleJoin}>
                   <Typography variant="button">Join</Typography>
                 </RoundButton>
               )}
-
-              {data.isOwner && <CommunityMenuBtn data={data} />}
             </Stack>
             <Dialog open={openPost} onClose={() => setOpenPost(false)}>
               <PostForm setOpen={setOpenPost} />
