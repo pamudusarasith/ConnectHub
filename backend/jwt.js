@@ -12,7 +12,7 @@ async function authenticate(req, res, next) {
   const token = req.header("Authorization")?.replace("Bearer ", "");
 
   if (!token) {
-    res.send({ success: false, message: "No token provided" });
+    res.send({ success: false, code: 401, message: "No token provided" });
     return;
   }
 
