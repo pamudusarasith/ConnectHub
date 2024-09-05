@@ -9,12 +9,13 @@ const CommentSchema = new Schema({
     author: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        required: true,
     },
-    // date: {
-    //     type: Date,
-    //     default: Date.now
-    // }
-});
+    edited: {
+        type: Boolean,
+        default: false,
+    },
+}, { timestamps: true });
 
 const Comment = mongoose.model('Comment', CommentSchema);
 

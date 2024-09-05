@@ -15,15 +15,18 @@ router.post("/", authenticate, async (req, res) => {
         });
 
         await comment.save();
+
+        await comment.populate("author", "username");
+
         res.send({ success: true, data: comment });
-        } catch (error) {
-            res.send({ success: false, message: error.message });
-        }
+    } catch (error) {
+        res.send({ success: false, message: error.message });
+    }
 });
 
 router.get("/", async (req, res) => {
     try {
-        const comments = await Comment.find().populate("author", "username firstName"); // Optionally populate author details if needed
+        const comments = await Comment.find().populate("author", "username"); // Optionally populate author details if needed
         res.send({ success: true, data: comments });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -69,6 +72,7 @@ router.put("/:commentId", authenticate, async (req, res) => {
         }
 
         comment.text = text;
+        comment.edited = true;
         await comment.save();
 
         res.send({ success: true, data: comment });

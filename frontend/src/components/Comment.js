@@ -4,12 +4,17 @@ import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
+import {useNavigate} from "react-router-dom";
+import Avatar from '@mui/material/Avatar';
+import { formatDistanceToNow } from 'date-fns';
+import TextField from '@mui/material/TextField';
 
 function Comment() {
     const [comment, setComment] = useState("");
     const [comments, setComments] = useState([]);
     const textareaRef = useRef(null);
     const [editingCommentId, setEditingCommentId] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchComments();
@@ -17,15 +22,10 @@ function Comment() {
 
     const fetchComments = async () => {
         try {
-            const response = await fetch('http://localhost:5050/api/comments');
-            if (response.ok) {
-                const result = await response.json();
-                setComments(result.data);
-            } else {
-                console.error('Failed to fetch comments');
-            }
+            const response = await axios.get('/api/comments');
+            setComments(response.data.data);
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Failed to fetch comments', error);
         }
     };
 
@@ -38,11 +38,14 @@ function Comment() {
                 if (editingCommentId) {
                     response = await axios.put(`/api/comments/${editingCommentId}`, { text: comment });
                 } else {
-                    response = await axios.post('/api/comments', {text:comment });
+                    response = await axios.post('/api/comments', {text:comment});
                 }
 
                 if (response.status === 200) {
                     const result = response.data.data;
+                    if (!response.data.success && response.data.code === 401) {
+                        navigate("/login");
+                    }
                     console.log('Comment saved:', result);
 
                     fetchComments();
@@ -52,13 +55,13 @@ function Comment() {
                     setEditingCommentId(null);
 
                     textareaRef.current.style.height = "40px";
-                } else {
-                    const errorText = await response.text();
-                    console.error('Failed to save the comment', errorText);
+            
+                    } else {
+                        console.error('Failed to save the comment');
+                    }
+                } catch (error) {
+                    console.error('Error:', error.response ? error.response.data : error.message);
                 }
-            } catch (error) {
-                console.error('Error:', error);
-            }
         } else {
             console.log('Comment cannot be empty');
         }
@@ -72,11 +75,10 @@ function Comment() {
 
     const deleteComment = async (commentId) => {
         try {
-            const response = await fetch(`http://localhost:5050/api/comments/${commentId}`, {
-                method: 'DELETE',
+            const response = await axios.delete(`/api/comments/${commentId}`, {
             });
 
-            if (response.ok) {
+            if (response.status === 200) {
                 console.log('Comment deleted');
                 setComments(comments.filter(comment => comment._id !== commentId));
             } else {
@@ -91,29 +93,25 @@ function Comment() {
         setEditingCommentId(id);
         setComment(text);
         textareaRef.current.focus();
-        //console.log('Edit button clicked');
     };
 
     return (
         <div>
             <form onSubmit={handleSubmit}>
                 <label>
-                    Comment
+                    <h2>Comments</h2>
                     <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                        <textarea
-                            ref={textareaRef}
+                        <TextField
+                            variant="outlined"
+                            multiline
+                            rows={1}
                             value={comment}
                             onChange={handleChange}
                             placeholder="Write a comment"
-                            style={{
-                                width: '80%',
-                                marginRight: '8px',
-                                resize: 'none',
-                                overflow: 'hidden',
-                                minHeight: '40px',
-                                boxSizing:'border-box', 
-                            }}
-                        />
+                            style={{ width: '80%', marginRight: '8px' }}
+                            ref={textareaRef}
+                        /> 
+
                         <IconButton type="submit">
                             <SendIcon />
                         </IconButton>
@@ -136,6 +134,20 @@ function Comment() {
                             wordBreak: 'break-word'
                         }}
                     >
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <Avatar src="/broken-image.jpg" />
+                            <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>{comment.author.username}</span>
+                            {comment.createdAt && (
+                                <span style={{ marginLeft: '10px', color: '#888' }}>
+                                    {formatDistanceToNow(new Date(comment.createdAt))} ago
+                                </span>
+                            )}
+                            {comment.edited && (
+                                <span>
+                                    (edited)
+                                </span>
+                            )}
+                        </div>
                         <pre style={{ flex: 1, margin: 0, whiteSpace: 'pre-wrap', textAlign: 'left' }}>{comment.text}</pre>
                         <div>
                             <IconButton onClick={() => deleteComment(comment._id)}>
