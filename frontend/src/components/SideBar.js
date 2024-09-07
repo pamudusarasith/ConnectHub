@@ -23,7 +23,7 @@ function SideBar({ open, setOpen }) {
     axios.get("/api/community/joined").then((res) => {
       if (res.data.success) setData(res.data.data);
     });
-  });
+  }, []);
 
   return (
     <Drawer open={open} onClose={() => setOpen(false)}>
