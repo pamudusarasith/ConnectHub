@@ -32,6 +32,28 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
+router.get("/", maybeAuthenticate, async (req, res) => {
+  let communities = await Community.find({}, "_id name description").limit(10);
+
+  communities = communities.map((community) => community.toJSON());
+
+  for (const community of communities) {
+    community.isMember =
+      req.user?.joinedCommunities.includes(community._id) || false;
+  }
+
+  res.send({ success: true, data: communities });
+});
+
+router.get("/joined", authenticate, async (req, res) => {
+  const user = await req.user.populate({
+    path: "joinedCommunities",
+    select: "_id name",
+  });
+
+  res.send({ success: true, data: user.joinedCommunities });
+});
+
 router.get("/:name", maybeAuthenticate, async (req, res) => {
   const { name } = req.params;
   const community = await Community.findOne({ name: name });
