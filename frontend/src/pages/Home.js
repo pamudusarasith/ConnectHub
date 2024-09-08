@@ -19,7 +19,7 @@ function HomePage() {
     fetchPosts();
   }, []);
   return (
-  <Container maxWidth="md" sx={{mt:3}} >
+  <Container maxWidth="md" sx={{mt:3 ,mb:3}} >
     <Grid container spacing={7}>
       {posts?.map((post, index) => (
         <Grid item xs={20} key={index}>
