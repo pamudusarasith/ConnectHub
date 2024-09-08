@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Container ,Grid} from "@mui/material";
 import axios from "axios";
-import Post from "../components/Post";
+import Post from "../components/post";
 
 function HomePage() {
   const [posts, setPosts] = useState(null);

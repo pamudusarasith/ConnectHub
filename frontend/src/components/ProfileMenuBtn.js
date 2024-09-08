@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { AccountCircleRounded } from "@mui/icons-material";
 import { IconButton, Menu, MenuItem, Switch, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { LoginStateCtx } from "../Contexts";
 
 function ProfileMenuBtn({ setTheme }) {
@@ -49,7 +49,9 @@ function ProfileMenuBtn({ setTheme }) {
           horizontal: "right",
         }}
       >
-        <MenuItem onClick={handleClose}>Profile</MenuItem>
+        <MenuItem component={NavLink} onClick={handleClose} to="/profile">
+          Profile
+        </MenuItem>
         <MenuItem onClick={logout}>Logout</MenuItem>
         <MenuItem>
           <Typography>Dark Mode</Typography>

@@ -23,7 +23,7 @@ function CommunityCarousel() {
   const handlePrevPage = () => {
     setPage(page - 1);
   };
-  console.log(cards);
+
   return (
     <Container maxWidth="md" alignItems="center">
       <Stack direction="row" spacing={2}>
