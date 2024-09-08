@@ -4,7 +4,7 @@ import { IconButton, Menu, MenuItem, Switch, Typography } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
 import { LoginStateCtx } from "../Contexts";
 
-function ProfileMenuBtn({ setTheme }) {
+function ProfileMenuBtn({ theme, setTheme }) {
   const navigate = useNavigate();
   const { setIsLoggedIn } = useContext(LoginStateCtx);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -55,7 +55,11 @@ function ProfileMenuBtn({ setTheme }) {
         <MenuItem onClick={logout}>Logout</MenuItem>
         <MenuItem>
           <Typography>Dark Mode</Typography>
-          <Switch label="Theme" onChange={handleChange} />
+          <Switch
+            label="Theme"
+            onChange={handleChange}
+            checked={theme === "dark"}
+          />
         </MenuItem>
       </Menu>
     </>

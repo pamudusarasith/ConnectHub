@@ -59,7 +59,7 @@ function CommunityPage() {
             }}
           >
             <Typography variant="h4">{data.name}</Typography>
-            <Typography variant="body1" color="textSecondary">
+            <Typography variant="body1" color="textSecondary" gutterBottom>
               {data.description}
             </Typography>
             <Stack spacing={2} direction="row" justifyContent="flex-end">

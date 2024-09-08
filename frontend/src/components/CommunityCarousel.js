@@ -1,4 +1,4 @@
-import { Container, IconButton, Stack } from "@mui/material";
+import { Box, Container, IconButton, Stack } from "@mui/material";
 import { NavigateBefore, NavigateNext } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -26,19 +26,34 @@ function CommunityCarousel() {
 
   return (
     <Container maxWidth="md" alignItems="center">
-      <Stack direction="row" spacing={2}>
-        {page > 0 && (
-          <IconButton sx={{ borderRadius: 2 }} onClick={handlePrevPage}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "1fr repeat(3, 4fr) 1fr",
+          gap: 1,
+          height: 300,
+        }}
+      >
+        {page > 0 ? (
+          <IconButton
+            sx={{ borderRadius: 2, gridColumn: 1 }}
+            onClick={handlePrevPage}
+          >
             <NavigateBefore />
           </IconButton>
+        ) : (
+          <div style={{ gridColumn: 1 }}></div>
         )}
         {cards?.slice(page * cardsPerPage, (page + 1) * cardsPerPage)}
         {cards && cards.length > (page + 1) * cardsPerPage && (
-          <IconButton sx={{ borderRadius: 2 }} onClick={handleNextPage}>
+          <IconButton
+            sx={{ borderRadius: 2, gridColumn: 5 }}
+            onClick={handleNextPage}
+          >
             <NavigateNext />
           </IconButton>
         )}
-      </Stack>
+      </Box>
     </Container>
   );
 }

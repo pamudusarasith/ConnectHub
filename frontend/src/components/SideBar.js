@@ -31,19 +31,26 @@ function SideBar({ open, setOpen }) {
         <Button sx={{ boxShadow: 1 }} onClick={() => navigate("/")}>
           Home
         </Button>
-        <Divider />
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreRounded />}>
-            <Typography>Communities</Typography>
-          </AccordionSummary>
-          <Stack>
-            {data?.map((community, i) => (
-              <Button key={i} onClick={() => navigate(`/community/${community.name}`)}>
-                {community.name}
-              </Button>
-            ))}
-          </Stack>
-        </Accordion>
+        {isLoggedIn && (
+          <>
+            <Divider />
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreRounded />}>
+                <Typography>Communities</Typography>
+              </AccordionSummary>
+              <Stack>
+                {data?.map((community, i) => (
+                  <Button
+                    key={i}
+                    onClick={() => navigate(`/community/${community.name}`)}
+                  >
+                    {community.name}
+                  </Button>
+                ))}
+              </Stack>
+            </Accordion>
+          </>
+        )}
       </Stack>
     </Drawer>
   );

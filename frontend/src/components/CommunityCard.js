@@ -1,35 +1,58 @@
-import { Card, CardActionArea, Typography } from "@mui/material";
+import { Card, CardActionArea, Stack, Typography } from "@mui/material";
 import { useContext, useState } from "react";
 import { LoginStateCtx } from "../Contexts";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { RoundButton } from "./common";
+import { PeopleAltRounded } from "@mui/icons-material";
 
 function CommunityCard({ community }) {
   const navigate = useNavigate();
   const { isLoggedIn } = useContext(LoginStateCtx);
-  const [data, setData] = useState({});
+  const [isMember, setIsMember] = useState(community.isMember);
 
   const handleJoin = () => {
     if (!isLoggedIn) return navigate("/login");
     axios.post(`/api/community/${community.name}/join`).then((res) => {
-      if (res.data.success) setData({ ...data, isMember: true });
+      if (res.data.success) setIsMember(true);
     });
   };
 
   const handleLeave = () => {
     axios.post(`/api/community/${community.name}/leave`).then((res) => {
-      if (res.data.success) setData({ ...data, isMember: false });
+      if (res.data.success) setIsMember(false);
     });
   };
 
   return (
-    <Card key={community._id} sx={{ maxWidth: 300, maxHeight: 400, p: 1 }} raised>
-      <CardActionArea sx={{ minWidth: 225, minHeight: 300 }}>
-        <Typography variant="h5" gutterBottom>{community.name}</Typography>
-        <Typography variant="body1">{community.description}</Typography>
+    <Card
+      key={community._id}
+      sx={{
+        p: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+      raised
+    >
+      <CardActionArea
+        LinkComponent={NavLink}
+        to={`/community/${community.name}`}
+        sx={{ height: 1, width: 1, display: "flex", flexDirection: "column" }}
+      >
+        <Typography variant="h6" gutterBottom>
+          {community.name}
+        </Typography>
+        <Typography variant="body2" gutterBottom>
+          {community.description}
+        </Typography>
+        <Stack direction="row" spacing={1} mt={2}>
+          <PeopleAltRounded />
+          <Typography variant="body2">{community.membersCount}</Typography>
+        </Stack>
       </CardActionArea>
-      {community.isMember ? (
+      {isMember ? (
         <RoundButton variant="outlined" onClick={handleLeave}>
           <Typography variant="button">Leave</Typography>
         </RoundButton>

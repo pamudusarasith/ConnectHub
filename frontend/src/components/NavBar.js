@@ -80,7 +80,7 @@ function NavBar({ theme, setTheme }) {
                 <Typography variant="button">Community</Typography>
               </RoundButton>
               <RoundButton onClick={logout}>Log Out</RoundButton>
-              <ProfileMenuBtn setTheme={setTheme} />
+              <ProfileMenuBtn theme={theme} setTheme={setTheme} />
             </>
           )}
           <SideBar open={openSidebar} setOpen={setOpenSidebar} />
