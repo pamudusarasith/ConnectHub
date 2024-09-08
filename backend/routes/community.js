@@ -1,17 +1,26 @@
 import express from "express";
 import Community from "../models/Community.js";
+import Tag from "../models/Tag.js";
 import { authenticate, maybeAuthenticate } from "../jwt.js";
 
 const router = express.Router();
 
 router.post("/", authenticate, async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, tags } = req.body;
+
+    const insertedTags = await Tag.insertMany(
+      tags.map((tn) => {
+        return { name: tn };
+      })
+    );
+
     const community = new Community({
       name,
       description,
       owner: req.user._id,
       members: [req.user._id],
+      tags: insertedTags.map((tag) => tag._id),
     });
 
     await community.save();
@@ -21,7 +30,7 @@ router.post("/", authenticate, async (req, res) => {
 
     res.send({ success: true, data: community });
   } catch (error) {
-    if (error.name == "ValidationError") {
+    if (error.name === "ValidationError") {
       res.send({
         success: false,
         message: Object.values(error.errors)[0].message,
@@ -35,12 +44,10 @@ router.post("/", authenticate, async (req, res) => {
 router.get("/", maybeAuthenticate, async (req, res) => {
   const communities = await Community.aggregate([
     {
-      $limit: 10,
-    },
-    {
       $project: {
         name: 1,
         description: 1,
+        tags: 1,
         membersCount: { $size: "$members" },
         isMember: { $in: [req.user?._id, "$members"] },
       },
@@ -69,6 +76,7 @@ router.get("/:name", maybeAuthenticate, async (req, res) => {
       $project: {
         name: 1,
         description: 1,
+        tags: 1,
         membersCount: { $size: "$members" },
         isMember: { $in: [req.user?._id, "$members"] },
         isOwner: { $eq: ["$owner", req.user?._id] },
@@ -100,6 +108,7 @@ router.put("/:name", authenticate, async (req, res) => {
 
   community.name = req.body.name;
   community.description = req.body.description;
+  community.tags = req.body.tags;
 
   await community.save();
 

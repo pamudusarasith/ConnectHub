@@ -1,4 +1,4 @@
-import { Box, Container, TextField, Typography } from "@mui/material";
+import { Box, Container, TextField, Typography, Chip } from "@mui/material";
 import { RoundButton } from "./common";
 import { useContext, useState } from "react";
 import axios from "axios";
@@ -10,7 +10,9 @@ function CommunityForm({ data, setOpen }) {
   const [formData, setFormData] = useState({
     name: data?.community.name || "",
     description: data?.community.description || "",
+    tags: data?.community.tags || [], // Initialize tags
   });
+  const [tagInput, setTagInput] = useState("");
   const [error, setError] = useState("");
   const { setIsLoggedIn } = useContext(LoginStateCtx);
 
@@ -46,6 +48,23 @@ function CommunityForm({ data, setOpen }) {
     });
   };
 
+  const handleTagAdd = () => {
+    if (tagInput && !formData.tags.includes(tagInput)) {
+      setFormData({
+        ...formData,
+        tags: [...formData.tags, tagInput],
+      });
+      setTagInput("");
+    }
+  };
+
+  const handleTagDelete = (tagToDelete) => {
+    setFormData({
+      ...formData,
+      tags: formData.tags.filter((tag) => tag !== tagToDelete),
+    });
+  };
+
   return (
     <Container maxWidth="md">
       <Box sx={{ m: 4 }}>
@@ -75,6 +94,31 @@ function CommunityForm({ data, setOpen }) {
             setFormData({ ...formData, description: e.target.value })
           }
         />
+        <TextField
+          label="Tags"
+          variant="outlined"
+          fullWidth
+          sx={{ mt: 2 }}
+          value={tagInput}
+          onChange={(e) => setTagInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleTagAdd();
+            }
+          }}
+          helperText="Press Enter to add a tag"
+        />
+        <Box sx={{ mt: 2 }}>
+          {formData.tags.map((tag, index) => (
+            <Chip
+              key={index}
+              label={tag}
+              onDelete={() => handleTagDelete(tag)}
+              sx={{ mr: 1, mb: 1 }}
+            />
+          ))}
+        </Box>
         <RoundButton sx={{ mt: 2 }} onClick={data ? handleEdit : handleCreate}>
           <Typography variant="button">{data ? "Save" : "Create"}</Typography>
         </RoundButton>

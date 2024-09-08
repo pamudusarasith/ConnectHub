@@ -58,9 +58,9 @@ function CommunityPage() {
               borderRadius: 2,
             }}
           >
-            <Typography variant="h4">{data.community?.name}</Typography>
+            <Typography variant="h4">{data.name}</Typography>
             <Typography variant="body1" color="textSecondary">
-              {data.community?.description}
+              {data.description}
             </Typography>
             <Stack spacing={2} direction="row" justifyContent="flex-end">
               {data.isMember ? (
