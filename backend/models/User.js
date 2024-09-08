@@ -45,6 +45,15 @@ const userSchema = new mongoose.Schema({
     ],
     default: [],
   },
+  likedPosts: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
+    default: [],
+  },
 });
 
 userSchema.pre("save", async function (next) {

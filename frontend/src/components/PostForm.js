@@ -53,11 +53,12 @@ function PostForm({ setOpen, post }) {
       setContent("");
       setError(null);
       setOpen(false);
+      window.location.reload();
     }
   };
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="sm" sx={{p:2}}>
       <Box component="form" sx={{ mt: 3 }}>
         <Typography variant="h5">Create A New Post</Typography>
 

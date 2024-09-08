@@ -11,6 +11,8 @@ import HomePage from "./pages/Home";
 import CommunityPage from "./pages/Community";
 import { setAuthHeader } from "./utils";
 import { LoginStateCtx } from "./Contexts";
+import PostPage from "./pages/PostPage";
+import UserProfile from "./pages/UserProfile";
 
 function App() {
   const [theme, setTheme] = useState("light");
@@ -31,6 +33,8 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/community/:name" element={<CommunityPage />} />
+              <Route path="/post/:id" element={<PostPage />} />
+              <Route path="/profile" element={<UserProfile />} />
             </Routes>
           </BrowserRouter>
         </div>

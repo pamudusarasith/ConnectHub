@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardHeader,
@@ -7,89 +7,90 @@ import {
   Avatar,
   IconButton,
   Typography,
-  Menu,
-  MenuItem,
-  Dialog
+  Stack,
+  Link,
 } from "@mui/material";
-import PostForm from './PostForm';
-import { ThumbUp, Comment,MoreVert } from "@mui/icons-material";
+import { NavLink, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { ThumbUp, Comment as CommentICON } from "@mui/icons-material";
 
-function Post({post}) {
-  const [anchorE1, setAnchorE1] = useState(null);
-  const [openPostForm,setOpenPostForm]=useState(false);
+function Post({ post }) {
+  const navigate = useNavigate();
+  const [liked, setLiked] = useState(post?.isLiked || false);
+  const [likesCount, setLikesCount] = useState(post?.likesCount || 0);
 
-  const handelMenuOpen = (event) => {
-    setAnchorE1(event.currentTarget);
+  const handelLike = () => {
+    axios.post("/api/post/" + post._id + "/like").then((res) => {
+      if (res.data.success) {
+        setLikesCount(liked ? likesCount - 1 : likesCount + 1);
+        setLiked(!liked);
+      } else if (res.data.code === 401) {
+        navigate("/login");
+      }
+    });
   };
 
-  const handelMenuClose = () => {
-    setAnchorE1(null);
+  const formatDate = (dateString) => {
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const handelDeleteClick = async () => {
-    const response = await fetch('/api/post/'+ post._id ,{
-        method:'DELETE'
-    })
-    const json = await response.json()
-
-    if(response.ok){
-        window.location.reload()
-    }
-  }
-  console.log(post)
   return (
-    <Card sx={{ maxWidth: "100%" }}>
+    <Card sx={{ maxWidth: "100%", borderRadius: "8px" }} raised>
       <CardHeader
         avatar={
-          <Avatar aria-label="recipe">
-            {post.author.firstName[0] + post.author.lastName[0]}
-          </Avatar>
+          <Stack direction="row" alignItems={"center"} spacing={4}>
+            <Avatar aria-label="recipe" sx={{ bgcolor: "#424242" }}>
+              {post?.author.firstName[0] + post?.author.lastName[0]}
+            </Avatar>
+            <Typography>{post?.author.username}</Typography>
+            <Typography variant="subtitle2">
+              {formatDate(post?.createdAt)}
+            </Typography>
+          </Stack>
         }
-        subheader={`Posted by ${post.author.username}`}
-        sx={{
-          "& .MuiCardHeader-subheader": {
-            fontSize: "1.2rem",
-            fontWeight: "bold",
-          },
-        }}
       />
-
+      <Link component={NavLink} to={"/post/" + post?._id} underline="none">
+        <Typography variant="h5" align="left" margin={2}>
+          {post?.title}
+        </Typography>
+      </Link>
       <CardContent>
-        <Typography variant="body2" color="text.secondary" align="center">
-          {post.content}
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          align="left"
+          sx={{ wordWrap: "break-word" }}
+        >
+          {post?.content}
         </Typography>
       </CardContent>
 
       <CardActions disableSpacing sx={{ mt: "auto" }}>
-        <IconButton aria-label="upvote">
+        <IconButton
+          aria-label="upvote"
+          onClick={handelLike}
+          color={liked ? "secondary" : "primary"}
+        >
           <ThumbUp />
         </IconButton>
-        <IconButton aria-label="comment">
-          <Comment />
-        </IconButton>
-        <IconButton aria-label="more" onClick={handelMenuOpen}>
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={anchorE1}
-          open={Boolean(anchorE1)}
-          onClose={handelMenuClose}
+        <Typography>{likesCount}</Typography>
+        <Link
+          component={NavLink}
+          to={"/post/" + post?._id + "?action=comment"}
+          underline="none"
         >
-          <MenuItem onClick={() => {
-            handelMenuClose();
-            setOpenPostForm(true);
-          }
-            
-
-          }> Update</MenuItem>
-          <MenuItem onClick={handelDeleteClick}>Delete</MenuItem>
-        </Menu>
-        <Dialog
-        open={openPostForm}
-        onClose={() => setOpenPostForm(false)}
-      >
-        <PostForm setOpen={setOpenPostForm} post={post} />
-      </Dialog>
+          <IconButton aria-label="comment">
+            <CommentICON />
+          </IconButton>
+        </Link>
       </CardActions>
     </Card>
   );
