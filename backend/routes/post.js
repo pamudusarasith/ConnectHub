@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   let posts = await Post.find({})
     .populate({ path: "author", select: "firstName lastName username" })
-    .sort({ createAt: -1 });
+    .sort({ createdAt: -1 });
 
   posts = posts.map((post) => post.toJSON());
 
