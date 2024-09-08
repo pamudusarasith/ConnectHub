@@ -26,6 +26,15 @@ const communitySchema = new mongoose.Schema(
       ],
       default: [],
     },
+    tags: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Tag",
+        },
+      ],
+      default: [],
+    },
   },
   { timestamps: true }
 );
