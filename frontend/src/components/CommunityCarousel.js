@@ -1,4 +1,4 @@
-import { Box, Container, IconButton, Stack } from "@mui/material";
+import { Box, Container, IconButton } from "@mui/material";
 import { NavigateBefore, NavigateNext } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import axios from "axios";

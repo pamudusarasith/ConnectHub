@@ -10,17 +10,24 @@ function CommunityCard({ community }) {
   const navigate = useNavigate();
   const { isLoggedIn } = useContext(LoginStateCtx);
   const [isMember, setIsMember] = useState(community.isMember);
+  const [membersCount, setMembersCount] = useState(community.membersCount);
 
   const handleJoin = () => {
     if (!isLoggedIn) return navigate("/login");
     axios.post(`/api/community/${community.name}/join`).then((res) => {
-      if (res.data.success) setIsMember(true);
+      if (res.data.success) {
+        setIsMember(true);
+        setMembersCount(membersCount + 1);
+      }
     });
   };
 
   const handleLeave = () => {
     axios.post(`/api/community/${community.name}/leave`).then((res) => {
-      if (res.data.success) setIsMember(false);
+      if (res.data.success) {
+        setIsMember(false);
+        setMembersCount(membersCount - 1);
+      }
     });
   };
 
@@ -49,7 +56,7 @@ function CommunityCard({ community }) {
         </Typography>
         <Stack direction="row" spacing={1} mt={2}>
           <PeopleAltRounded />
-          <Typography variant="body2">{community.membersCount}</Typography>
+          <Typography variant="body2">{membersCount}</Typography>
         </Stack>
       </CardActionArea>
       {isMember ? (
