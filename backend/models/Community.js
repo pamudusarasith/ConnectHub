@@ -35,6 +35,15 @@ const communitySchema = new mongoose.Schema(
       ],
       default: [],
     },
+    posts: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Post",
+        },
+      ],
+      default: [],
+    },
   },
   { timestamps: true }
 );

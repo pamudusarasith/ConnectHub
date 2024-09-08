@@ -42,6 +42,30 @@ router.get("/:id", maybeAuthenticate, async (req, res) => {
   res.status(200).json(post);
 });
 
+router.get("/community/:name", maybeAuthenticate, async (req, res) => {
+  const { name } = req.params;
+
+  let community = await Community.find({name}).populate({
+    path: "posts",
+    populate: { path: "author", select: "firstName lastName username" },
+  });
+
+  if (!community) {
+    return res.status(404).json({ error: "No such community" });
+  }
+  community = community[0]
+  
+  let posts = community.posts.map((p) => p.toJSON());
+  posts = posts.map((post) => {
+    return {
+      ...post,
+      isLiked: req.user?.likedPosts.includes(post._id) || false,
+      isOwner: req.user?._id.toString() === post.author._id.toString() || false,
+    };
+  });
+  res.status(200).json(posts);
+});
+
 router.post("/", authenticate, async (req, res) => {
   const { name, title, content } = req.body;
   const community = await Community.findOne({ name: name });
@@ -53,6 +77,8 @@ router.post("/", authenticate, async (req, res) => {
       content,
       author: req.user._id,
     });
+    community.posts.push(post);
+    await community.save();
     res.status(200).json(post);
   } catch (error) {
     res.status(400).json({ error: error.message });
