@@ -115,7 +115,7 @@ function Comment({ openComment, setOpenComment }) {
           <div
             style={{
               display: openComment ? "block" : "none",
-              marginBlockEnd: "8px",
+              marginBlockEnd: "24px",
             }}
           >
             <TextField
