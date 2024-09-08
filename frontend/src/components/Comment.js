@@ -9,7 +9,7 @@ import Avatar from '@mui/material/Avatar';
 import { formatDistanceToNow } from 'date-fns';
 import TextField from '@mui/material/TextField';
 
-function Comment() {
+function Comment({openComment, setOpenComment}) {
     const [comment, setComment] = useState("");
     const [comments, setComments] = useState([]);
     const textareaRef = useRef(null);
@@ -90,6 +90,7 @@ function Comment() {
     };
 
     const handleEdit = (id, text) => {
+        setOpenComment(!openComment);
         setEditingCommentId(id);
         setComment(text);
         textareaRef.current.focus();
@@ -100,7 +101,7 @@ function Comment() {
             <form onSubmit={handleSubmit}>
                 <label>
                     <h2>Comments</h2>
-                    <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <div style={{ display: openComment ? 'block' : 'none',marginBlockEnd:'8px' }}>
                         <TextField
                             variant="outlined"
                             multiline
