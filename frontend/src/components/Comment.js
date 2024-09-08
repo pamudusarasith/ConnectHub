@@ -8,13 +8,15 @@ import {useNavigate} from "react-router-dom";
 import Avatar from '@mui/material/Avatar';
 import { formatDistanceToNow } from 'date-fns';
 import TextField from '@mui/material/TextField';
+import { useParams } from 'react-router-dom';
 
 function Comment({openComment, setOpenComment}) {
-    const [comment, setComment] = useState("");
+    const [text, setComment] = useState("");
     const [comments, setComments] = useState([]);
     const textareaRef = useRef(null);
     const [editingCommentId, setEditingCommentId] = useState(null);
     const navigate = useNavigate();
+    const { id } = useParams();
 
     useEffect(() => {
         fetchComments();
@@ -22,8 +24,8 @@ function Comment({openComment, setOpenComment}) {
 
     const fetchComments = async () => {
         try {
-            const response = await axios.get('/api/comments');
-            setComments(response.data.data);
+            const response = await axios.get('/api/comments/' + id);
+            setComments(response.data.data.reverse());
         } catch (error) {
             console.error('Failed to fetch comments', error);
         }
@@ -31,14 +33,19 @@ function Comment({openComment, setOpenComment}) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log(id)
+        const commentData= {
+            postId: id,
+            text,
+        };
 
-        if (comment.trim()) {
+        if (text.trim()) {
             try {
                 let response;
                 if (editingCommentId) {
-                    response = await axios.put(`/api/comments/${editingCommentId}`, { text: comment });
+                    response = await axios.put(`/api/comments/${editingCommentId}`, commentData );
                 } else {
-                    response = await axios.post('/api/comments', {text:comment});
+                    response = await axios.post('/api/comments', commentData );
                 }
 
                 if (response.status === 200) {
@@ -57,7 +64,7 @@ function Comment({openComment, setOpenComment}) {
                     textareaRef.current.style.height = "40px";
             
                     } else {
-                        console.error('Failed to save the comment');
+                        console.error('Failed to save the text');
                     }
                 } catch (error) {
                     console.error('Error:', error.response ? error.response.data : error.message);
@@ -80,9 +87,9 @@ function Comment({openComment, setOpenComment}) {
 
             if (response.status === 200) {
                 console.log('Comment deleted');
-                setComments(comments.filter(comment => comment._id !== commentId));
+                setComments(comments.filter(text => text._id !== commentId));
             } else {
-                console.error('Failed to delete comment');
+                console.error('Failed to delete text');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -106,9 +113,9 @@ function Comment({openComment, setOpenComment}) {
                             variant="outlined"
                             multiline
                             rows={1}
-                            value={comment}
+                            value={text}
                             onChange={handleChange}
-                            placeholder="Write a comment"
+                            placeholder="Write a text"
                             style={{ width: '80%', marginRight: '8px' }}
                             ref={textareaRef}
                         /> 
@@ -121,9 +128,9 @@ function Comment({openComment, setOpenComment}) {
             </form>
 
             <div>
-                {comments.map(comment => (
+                {comments.map(text => (
                     <div 
-                        key={comment._id}
+                        key={text._id}
                         style={{ 
                             display: 'flex',
                             flexDirection: 'column',
@@ -137,24 +144,24 @@ function Comment({openComment, setOpenComment}) {
                     >
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <Avatar src="/broken-image.jpg" />
-                            <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>{comment.author.username}</span>
-                            {comment.createdAt && (
+                            <span style={{ marginLeft: '10px', fontWeight: 'bold' }}>{text.author.username}</span>
+                            {text.createdAt && (
                                 <span style={{ marginLeft: '10px', color: '#888' }}>
-                                    {formatDistanceToNow(new Date(comment.createdAt))} ago
+                                    {formatDistanceToNow(new Date(text.createdAt))} ago
                                 </span>
                             )}
-                            {comment.edited && (
+                            {text.edited && (
                                 <span>
                                     (edited)
                                 </span>
                             )}
                         </div>
-                        <pre style={{ flex: 1, margin: 0, whiteSpace: 'pre-wrap', textAlign: 'left' }}>{comment.text}</pre>
+                        <pre style={{ flex: 1, margin: 0, whiteSpace: 'pre-wrap', textAlign: 'left' }}>{text.text}</pre>
                         <div>
-                            <IconButton onClick={() => deleteComment(comment._id)}>
+                            <IconButton onClick={() => deleteComment(text._id)}>
                                 <DeleteIcon />
                             </IconButton>
-                            <IconButton onClick={() => handleEdit(comment._id, comment.text)}>
+                            <IconButton onClick={() => handleEdit(text._id, text.text)}>
                                 <EditIcon />
                             </IconButton>
                         </div>

@@ -11,6 +11,11 @@ const CommentSchema = new Schema({
         ref: "User",
         required: true,
     },
+    post: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+        required: true,
+    },
     edited: {
         type: Boolean,
         default: false,
