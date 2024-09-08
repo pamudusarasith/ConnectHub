@@ -6,16 +6,34 @@ import { authenticate, maybeAuthenticate } from "../jwt.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  let posts = await Post.find({})
-    .populate({ path: "author", select: "firstName lastName username" })
-    .sort({ createdAt: -1 });
+router.get("/", maybeAuthenticate, async (req, res) => {
+  let posts = await Post.aggregate([
+    {
+      $addFields: {
+        likesCount: { $size: "$likes" },
+        isLiked: {
+          $in: [req.user?._id, "$likes"],
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "author",
+        foreignField: "_id",
+        as: "author",
+        pipeline: [{ $project: { firstName: 1, lastName: 1, username: 1 } }],
+      },
+    },
+  ]);
 
-  posts = posts.map((post) => post.toJSON());
-
-  for (const post of posts) {
-    post.isLiked = req.user?.likedPosts.includes(post._id) || false;
-  }
+  posts = posts.map((post) => {
+    return {
+      ...post,
+      author: post.author[0],
+      isLiked: req.user?.likedPosts.includes(post._id) || false,
+    };
+  });
 
   res.send({ success: true, data: posts });
 });
@@ -27,11 +45,6 @@ router.get("/:id", maybeAuthenticate, async (req, res) => {
     return res.status(404).json({ error: "No such post" });
   }
 
-  // let post = await Post.findById(id).populate({
-  //   path: "author",
-  //   select: "firstName lastName username",
-  // });
-
   let post = await Post.aggregate([
     {
       $match: {
@@ -39,14 +52,8 @@ router.get("/:id", maybeAuthenticate, async (req, res) => {
       },
     },
     {
-      $project: {
-        community: 1,
-        title: 1,
-        content: 1,
-        author: 1,
+      $addFields: {
         likesCount: { $size: "$likes" },
-        createdAt: 1,
-        updatedAt: 1,
         isLiked: {
           $in: [req.user?._id, "$likes"],
         },
@@ -66,7 +73,7 @@ router.get("/:id", maybeAuthenticate, async (req, res) => {
   if (!post) {
     return res.status(404).json({ error: "No such post" });
   }
-  post = post[0]
+  post = post[0];
   post.author = post.author[0];
   res.status(200).json(post);
 });

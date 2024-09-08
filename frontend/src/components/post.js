@@ -10,15 +10,24 @@ import {
   Stack,
   Link,
 } from "@mui/material";
-import { NavLink } from "react-router-dom";
-
+import { NavLink, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { ThumbUp, Comment as CommentICON } from "@mui/icons-material";
 
 function Post({ post }) {
-  const [liked, setLiked] = useState(false);
+  const navigate = useNavigate();
+  const [liked, setLiked] = useState(post?.isLiked || false);
+  const [likesCount, setLikesCount] = useState(post?.likesCount || 0);
 
   const handelLike = () => {
-    setLiked(!liked);
+    axios.post("/api/post/" + post._id + "/like").then((res) => {
+      if (res.data.success) {
+        setLikesCount(liked ? likesCount - 1 : likesCount + 1);
+        setLiked(!liked);
+      } else if (res.data.code === 401) {
+        navigate("/login");
+      }
+    });
   };
 
   const formatDate = (dateString) => {
@@ -34,11 +43,11 @@ function Post({ post }) {
   };
 
   return (
-    <Card sx={{ maxWidth: "100%",borderRadius:"8px"}} raised>
+    <Card sx={{ maxWidth: "100%", borderRadius: "8px" }} raised>
       <CardHeader
         avatar={
           <Stack direction="row" alignItems={"center"} spacing={4}>
-            <Avatar aria-label="recipe" sx={{bgcolor:"#424242"}}>
+            <Avatar aria-label="recipe" sx={{ bgcolor: "#424242" }}>
               {post?.author.firstName[0] + post?.author.lastName[0]}
             </Avatar>
             <Typography>{post?.author.username}</Typography>
@@ -72,6 +81,7 @@ function Post({ post }) {
         >
           <ThumbUp />
         </IconButton>
+        <Typography>{likesCount}</Typography>
         <Link
           component={NavLink}
           to={"/post/" + post?._id + "?action=comment"}

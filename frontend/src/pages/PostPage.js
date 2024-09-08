@@ -36,7 +36,7 @@ function PostPage() {
         setLikesCount(res.data.likesCount);
       }
     });
-  }, []);
+  }, [id]);
 
   const [anchorE1, setAnchorE1] = useState(null);
   const [openPostForm, setOpenPostForm] = useState(false);
