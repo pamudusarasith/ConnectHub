@@ -31,6 +31,7 @@ function PostForm({ setOpen, post }) {
       setError(null);
       setOpen(false);
     }
+    window.location.reload();
   };
 
   const handleUpdate = async (event) => {
