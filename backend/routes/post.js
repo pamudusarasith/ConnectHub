@@ -27,18 +27,47 @@ router.get("/:id", maybeAuthenticate, async (req, res) => {
     return res.status(404).json({ error: "No such post" });
   }
 
-  let post = await Post.findById(id).populate({
-    path: "author",
-    select: "firstName lastName username",
-  });
+  // let post = await Post.findById(id).populate({
+  //   path: "author",
+  //   select: "firstName lastName username",
+  // });
+
+  let post = await Post.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(id),
+      },
+    },
+    {
+      $project: {
+        community: 1,
+        title: 1,
+        content: 1,
+        author: 1,
+        likesCount: { $size: "$likes" },
+        createdAt: 1,
+        updatedAt: 1,
+        isLiked: {
+          $in: [req.user?._id, "$likes"],
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "author",
+        foreignField: "_id",
+        as: "author",
+        pipeline: [{ $project: { firstName: 1, lastName: 1, username: 1 } }],
+      },
+    },
+  ]);
 
   if (!post) {
     return res.status(404).json({ error: "No such post" });
   }
-  post = post.toJSON();
-  post.isLiked = req.user?.likedPosts.includes(post._id) || false;
-  post.isOwner =
-    req.user?._id.toString() === post.author._id.toString() || false;
+  post = post[0]
+  post.author = post.author[0];
   res.status(200).json(post);
 });
 
