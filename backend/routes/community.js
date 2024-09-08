@@ -32,23 +32,56 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
+router.get("/", maybeAuthenticate, async (req, res) => {
+  const communities = await Community.aggregate([
+    {
+      $limit: 10,
+    },
+    {
+      $project: {
+        name: 1,
+        description: 1,
+        membersCount: { $size: "$members" },
+        isMember: { $in: [req.user?._id, "$members"] },
+      },
+    },
+  ]);
+
+  res.send({ success: true, data: communities });
+});
+
+router.get("/joined", authenticate, async (req, res) => {
+  const user = await req.user.populate({
+    path: "joinedCommunities",
+    select: "_id name",
+  });
+
+  res.send({ success: true, data: user.joinedCommunities });
+});
+
 router.get("/:name", maybeAuthenticate, async (req, res) => {
   const { name } = req.params;
-  const community = await Community.findOne({ name: name });
+  const community = await Community.aggregate([
+    {
+      $match: { name: name },
+    },
+    {
+      $project: {
+        name: 1,
+        description: 1,
+        membersCount: { $size: "$members" },
+        isMember: { $in: [req.user?._id, "$members"] },
+        isOwner: { $eq: ["$owner", req.user?._id] },
+      },
+    },
+  ]);
 
-  if (!community) {
+  if (community.length === 0) {
     res.send({ success: false, message: "No such community" });
     return;
   }
 
-  let isMember = false;
-  let isOwner = false;
-  if (req.user) {
-    isMember = req.user?.joinedCommunities?.includes(community._id);
-    isOwner = req.user?._id.toString() === community.owner.toString();
-  }
-
-  res.send({ success: true, data: { community, isMember, isOwner } });
+  res.send({ success: true, data: community[0] });
 });
 
 router.put("/:name", authenticate, async (req, res) => {

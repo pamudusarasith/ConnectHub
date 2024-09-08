@@ -1,43 +1,58 @@
 import React, { useState } from "react";
 import { TextField, Button, Container, Box, Typography } from "@mui/material";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
-function PostForm() {
-  const [threadId, setThreadId] = useState("");
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
+function PostForm({ setOpen, post }) {
+  const { name } = useParams();
+
+  const [title, setTitle] = useState(post?.title || "");
+  const [content, setContent] = useState(post?.content || "");
   const [error, setError] = useState(null);
-
+  console.log(post);
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     const postData = {
-      threadId,
+      name,
       title,
       content,
-      author
     };
 
-    const response = await fetch("api/post", {
-      method: "POST",
-      body: JSON.stringify(postData),
-      headers: {
-        "content-Type": "application/json",
-      },
-    });
+    const response = await axios.post("/api/post", postData);
 
-    const json = await response.json();
-
-    if (!response.ok) {
-      setError(json.error);
+    if (response.status !== 200) {
+      setError(response.error);
     }
 
-    if (response.ok) {
-      setThreadId("");
+    if (response.status === 200) {
       setTitle("");
       setContent("");
-      setAuthor("");
       setError(null);
+      setOpen(false);
+    }
+  };
+
+  const handleUpdate = async (event) => {
+    event.preventDefault();
+
+    const postData = {
+      name,
+      title,
+      content,
+    };
+
+    const response = await axios.patch('/api/post/' + post._id, postData);
+
+    if (response.status !== 200) {
+      setError(response.error);
+    }
+
+    if (response.status === 200) {
+      setTitle("");
+      setContent("");
+      setError(null);
+      setOpen(false);
     }
   };
 
@@ -46,14 +61,6 @@ function PostForm() {
       <Box component="form" sx={{ mt: 3 }}>
         <Typography variant="h5">Create A New Post</Typography>
 
-        <TextField
-          sx={{ mb: 2 }}
-          label="ThreadId"
-          fullWidth
-          required
-          value={threadId}
-          onChange={(e) => setThreadId(e.target.value)}
-        />
         <TextField
           sx={{ mb: 2 }}
           label="Title"
@@ -73,20 +80,12 @@ function PostForm() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
-        <TextField
-          sx={{ mb: 2 }}
-          label="Author"
-          fullWidth
-          required
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-        />
 
         <Button
           variant="contained"
           color="primary"
           type="submit"
-          onClick={handleSubmit}
+          onClick={post ? handleUpdate : handleSubmit}
         >
           Submit Post
         </Button>

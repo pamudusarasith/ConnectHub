@@ -1,6 +1,8 @@
 import express from "express";
 import Post from "../models/Post.js";
 import mongoose from "mongoose";
+import Community from "../models/Community.js";
+import { authenticate } from "../jwt.js";
 
 const router = express.Router();
 
@@ -28,16 +30,16 @@ router.get("/:id", async (req, res) => {
   res.status(200).json(post);
 });
 
-router.post("/", async (req, res) => {
-  const { threadId, content, author, createdAt, updatedAt } = req.body;
+router.post("/", authenticate, async (req, res) => {
+  const { name, title, content } = req.body;
+  const community = await Community.findOne({ name: name });
 
   try {
     const post = await Post.create({
-      threadId,
+      community: community._id,
+      title,
       content,
-      author,
-      createdAt,
-      updatedAt,
+      author: req.user._id,
     });
     res.status(200).json(post);
   } catch (error) {
