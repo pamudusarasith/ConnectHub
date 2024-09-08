@@ -46,7 +46,6 @@ function PostPage() {
     axios.post("/api/post/" + post._id + "/like").then((res) => {
       if (res.data.success) {
         setLiked(!liked);
-        setPost({ ...post, isLiked: !post.isLiked });
       } else if (res.data.code === 401) {
         navigate("/login");
       }
@@ -66,14 +65,14 @@ function PostPage() {
   };
 
   const handelDeleteClick = async () => {
-    const response = await fetch("/api/post/" + post?._id, {
-      method: "DELETE",
-    });
-    const json = await response.json();
-
-    if (response.ok) {
+   axios.delete(`/api/post/`+post._id).then((res) => {
+    if (res.status === 200) {
       window.location.reload();
     }
+   })
+    
+
+  
   };
 
   const formatDate = (dateString) => {
@@ -87,7 +86,7 @@ function PostPage() {
 
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
-  console.log(liked, post?.isLiked === true);
+
   return (
     <Container maxWidth="md" sx={{ mt: 5 }}>
       <Card sx={{ maxWidth: "100%" }}>
@@ -131,9 +130,9 @@ function PostPage() {
           <IconButton aria-label="comment" onClick={handelCommentOpen}>
             <CommentICON />
           </IconButton>
-          <IconButton aria-label="more" onClick={handelMenuOpen}>
+          {post?.isOwner &&<IconButton aria-label="more" onClick={handelMenuOpen}>
             <MoreVert />
-          </IconButton>
+            </IconButton>}
           <Menu
             anchorEl={anchorE1}
             open={Boolean(anchorE1)}

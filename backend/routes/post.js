@@ -37,6 +37,8 @@ router.get("/:id", maybeAuthenticate, async (req, res) => {
   }
   post = post.toJSON();
   post.isLiked = req.user?.likedPosts.includes(post._id) || false;
+  post.isOwner =
+    req.user?._id.toString() === post.author._id.toString() || false;
   res.status(200).json(post);
 });
 
@@ -57,18 +59,23 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ error: "No such post" });
   }
 
-  const post = await Post.findOneAndDelete({ _id: id });
+  let post = await Post.findOne({ _id: id });
 
   if (!post) {
     return res.status(400).json({ error: "No such post" });
   }
+
+  if (post.author !== req.user._id)
+    return res.status(400).json({ error: "Unauthorized" });
+
+  post = await Post.findOneAndDelete({ _id: id });
 
   res.status(200).json(post);
 });
@@ -93,8 +100,6 @@ router.patch("/:id", async (req, res) => {
 
   res.status(200).json(post);
 });
-
-export default router;
 
 router.post("/:id/like", authenticate, async (req, res) => {
   const { id } = req.params;
@@ -126,3 +131,5 @@ router.post("/:id/like", authenticate, async (req, res) => {
     res.send({ success: true, message: "Liked" });
   }
 });
+
+export default router;
