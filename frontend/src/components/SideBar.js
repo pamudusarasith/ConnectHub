@@ -23,7 +23,7 @@ function SideBar({ open, setOpen }) {
     axios.get("/api/community/joined").then((res) => {
       if (res.data.success) setData(res.data.data);
     });
-  }, []);
+  }, [isLoggedIn]);
 
   return (
     <Drawer open={open} onClose={() => setOpen(false)}>
@@ -37,8 +37,8 @@ function SideBar({ open, setOpen }) {
             <Typography>Communities</Typography>
           </AccordionSummary>
           <Stack>
-            {data?.map((community) => (
-              <Button onClick={() => navigate(`/community/${community.name}`)}>
+            {data?.map((community, i) => (
+              <Button key={i} onClick={() => navigate(`/community/${community.name}`)}>
                 {community.name}
               </Button>
             ))}
