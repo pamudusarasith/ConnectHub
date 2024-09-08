@@ -3,10 +3,6 @@ import {
   Box,
   Typography,
   Grid2 as Grid,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
   Stack,
   Dialog,
 } from "@mui/material";
@@ -18,6 +14,8 @@ import { AddRounded } from "@mui/icons-material";
 import { LoginStateCtx } from "../Contexts";
 import CommunityMenuBtn from "../components/CommunityMenuBtn.js";
 import PostForm from "../components/PostForm.js";
+import Post from "../components/post.js";
+import CommunityCarousel from "../components/CommunityCarousel";
 
 function CommunityPage() {
   const { isLoggedIn } = useContext(LoginStateCtx);
@@ -31,6 +29,20 @@ function CommunityPage() {
       if (res.data.success) setData(res.data.data);
     });
   }, [name]);
+
+  const [posts, setPosts] = useState(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const response = await axios.get(`/api/post/community/${name}`);
+
+      if (response.status === 200) {
+        setPosts(response.data.reverse());
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
   const handleJoin = () => {
     if (!isLoggedIn) return navigate("/login");
@@ -46,71 +58,61 @@ function CommunityPage() {
   };
 
   return (
-    <Container maxWidth="md">
-      <Grid container spacing={2}>
-        <Grid size={12}>
-          <Box
-            sx={{
-              mt: 4,
-              mb: 4,
-              p: 2,
-              backgroundColor: "primary.light",
-              borderRadius: 2,
-            }}
-          >
-            <Typography variant="h4">{data.name}</Typography>
-            <Typography variant="body1" color="textSecondary" gutterBottom>
-              {data.description}
-            </Typography>
-            <Stack spacing={2} direction="row" justifyContent="flex-end">
-              {data.isMember ? (
-                <>
-                  <RoundButton variant="outlined" onClick={() => setOpenPost(true)}>
-                    <AddRounded />
-                    <Typography variant="button">Post</Typography>
+    <>
+      <Container maxWidth="md">
+        <Grid container spacing={2}>
+          <Grid size={12}>
+            <Box
+              sx={{
+                mt: 4,
+                mb: 4,
+                p: 2,
+                backgroundColor: "primary.light",
+                borderRadius: 2,
+              }}
+            >
+              <Typography variant="h4">{data.name}</Typography>
+              <Typography variant="body1" color="textSecondary" gutterBottom>
+                {data.description}
+              </Typography>
+              <Stack spacing={2} direction="row" justifyContent="flex-end">
+                {data.isMember ? (
+                  <>
+                    <RoundButton
+                      variant="outlined"
+                      onClick={() => setOpenPost(true)}
+                    >
+                      <AddRounded />
+                      <Typography variant="button">Post</Typography>
+                    </RoundButton>
+                    <RoundButton variant="outlined" onClick={handleLeave}>
+                      <Typography variant="button">Leave</Typography>
+                    </RoundButton>
+                    {data.isOwner && <CommunityMenuBtn data={data} />}
+                  </>
+                ) : (
+                  <RoundButton onClick={handleJoin}>
+                    <Typography variant="button">Join</Typography>
                   </RoundButton>
-                  <RoundButton variant="outlined" onClick={handleLeave}>
-                    <Typography variant="button">Leave</Typography>
-                  </RoundButton>
-                  {data.isOwner && <CommunityMenuBtn data={data} />}
-                </>
-              ) : (
-                <RoundButton onClick={handleJoin}>
-                  <Typography variant="button">Join</Typography>
-                </RoundButton>
-              )}
-            </Stack>
-            <Dialog open={openPost} onClose={() => setOpenPost(false)}>
-              <PostForm setOpen={setOpenPost} />
-            </Dialog>
-          </Box>
+                )}
+              </Stack>
+              <Dialog open={openPost} onClose={() => setOpenPost(false)}>
+                <PostForm setOpen={setOpenPost} />
+              </Dialog>
+            </Box>
+          </Grid>
         </Grid>
-
-        <Grid size={12}>
-          <Typography variant="h6" component="h2">
-            Recent Posts
-          </Typography>
+      </Container>
+      <Container maxWidth="md" sx={{ mt: 3, mb: 3 }}>
+        <Grid container spacing={7} sx={{ mt: 2 }}>
+          {posts?.map((post, index) => (
+            <Grid item xs={20} key={index} sx={{ width: "100%" }}>
+              <Post post={post} />
+            </Grid>
+          ))}
         </Grid>
-        <Grid size={12}>
-          <Paper sx={{ p: 2, mt: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemText
-                  primary="Post Title 1"
-                  secondary="This is a short description of the post. It gives an overview of the post content."
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Post Title 2"
-                  secondary="This is another short description of the post. It gives an overview of the post content."
-                />
-              </ListItem>
-            </List>
-          </Paper>
-        </Grid>
-      </Grid>
-    </Container>
+      </Container>
+    </>
   );
 }
 

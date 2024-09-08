@@ -31,7 +31,6 @@ router.get("/", maybeAuthenticate, async (req, res) => {
     return {
       ...post,
       author: post.author[0],
-      isLiked: req.user?.likedPosts.includes(post._id) || false,
     };
   });
 
@@ -78,6 +77,58 @@ router.get("/:id", maybeAuthenticate, async (req, res) => {
   res.status(200).json(post);
 });
 
+router.get("/community/:name", maybeAuthenticate, async (req, res) => {
+  const { name } = req.params;
+
+  let community = await Community.aggregate([
+    {
+      $match: { name: name },
+    },
+    {
+      $lookup: {
+        from: "posts",
+        localField: "posts",
+        foreignField: "_id",
+        as: "posts",
+        pipeline: [
+          {
+            $addFields: {
+              likesCount: { $size: "$likes" },
+              isLiked: {
+                $in: [req.user?._id, "$likes"],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "author",
+              foreignField: "_id",
+              as: "author",
+              pipeline: [
+                { $project: { firstName: 1, lastName: 1, username: 1 } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ]);
+
+  if (community.length === 0) {
+    return res.status(404).json({ error: "No such community" });
+  }
+  community = community[0];
+  let posts = community.posts.map((post) => {
+    return {
+      ...post,
+      author: post.author[0],
+    };
+  });
+
+  res.status(200).json(posts);
+});
+
 router.post("/", authenticate, async (req, res) => {
   const { name, title, content } = req.body;
   const community = await Community.findOne({ name: name });
@@ -89,6 +140,8 @@ router.post("/", authenticate, async (req, res) => {
       content,
       author: req.user._id,
     });
+    community.posts.push(post);
+    await community.save();
     res.status(200).json(post);
   } catch (error) {
     res.status(400).json({ error: error.message });
