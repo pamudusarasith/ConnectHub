@@ -26,7 +26,7 @@ router.post("/", authenticate, async (req, res) => {
 
 router.get("/", async (req, res) => {
     try {
-        const comments = await Comment.find().populate("author", "username"); // Optionally populate author details if needed
+        const comments = await Comment.find().populate("author", "username");
         res.send({ success: true, data: comments });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
