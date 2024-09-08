@@ -2,31 +2,43 @@ import express from "express";
 import Post from "../models/Post.js";
 import mongoose from "mongoose";
 import Community from "../models/Community.js";
-import { authenticate } from "../jwt.js";
+import { authenticate, maybeAuthenticate } from "../jwt.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-  const posts = await Post.find({})
+  let posts = await Post.find({})
     .populate({ path: "author", select: "firstName lastName username" })
-    .sort({ createAt: -1 });
+    .sort({ createdAt: -1 });
 
-  res.status(200).json(posts);
+  posts = posts.map((post) => post.toJSON());
+
+  for (const post of posts) {
+    post.isLiked = req.user?.likedPosts.includes(post._id) || false;
+  }
+
+  res.send({ success: true, data: posts });
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", maybeAuthenticate, async (req, res) => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ error: "No such post" });
   }
 
-  const post = await Post.findById(id);
+  let post = await Post.findById(id).populate({
+    path: "author",
+    select: "firstName lastName username",
+  });
 
   if (!post) {
     return res.status(404).json({ error: "No such post" });
   }
-
+  post = post.toJSON();
+  post.isLiked = req.user?.likedPosts.includes(post._id) || false;
+  post.isOwner =
+    req.user?._id.toString() === post.author._id.toString() || false;
   res.status(200).json(post);
 });
 
@@ -47,18 +59,23 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ error: "No such post" });
   }
 
-  const post = await Post.findOneAndDelete({ _id: id });
+  let post = await Post.findOne({ _id: id });
 
   if (!post) {
     return res.status(400).json({ error: "No such post" });
   }
+
+  if (post.author !== req.user._id)
+    return res.status(400).json({ error: "Unauthorized" });
+
+  post = await Post.findOneAndDelete({ _id: id });
 
   res.status(200).json(post);
 });
@@ -82,6 +99,37 @@ router.patch("/:id", async (req, res) => {
   }
 
   res.status(200).json(post);
+});
+
+router.post("/:id/like", authenticate, async (req, res) => {
+  const { id } = req.params;
+  const post = await Post.findOne({ _id: id });
+
+  if (!post) {
+    res.send({ success: false, message: "No such post" });
+    return;
+  }
+
+  if (req.user.likedPosts.includes(post._id)) {
+    req.user.likedPosts = req.user.likedPosts.filter(
+      (id) => id.toString() !== post._id.toString()
+    );
+    await req.user.save();
+
+    post.likes = post.likes.filter(
+      (id) => id.toString() !== req.user._id.toString()
+    );
+    await post.save();
+    res.send({ success: true, message: "Unliked" });
+  } else {
+    req.user.likedPosts.push(post._id);
+    await req.user.save();
+
+    post.likes.push(req.user._id);
+    await post.save();
+
+    res.send({ success: true, message: "Liked" });
+  }
 });
 
 export default router;

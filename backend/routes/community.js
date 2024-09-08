@@ -1,17 +1,26 @@
 import express from "express";
 import Community from "../models/Community.js";
+import Tag from "../models/Tag.js";
 import { authenticate, maybeAuthenticate } from "../jwt.js";
 
 const router = express.Router();
 
 router.post("/", authenticate, async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, tags } = req.body;
+
+    const insertedTags = await Tag.insertMany(
+      tags.map((tn) => {
+        return { name: tn };
+      })
+    );
+
     const community = new Community({
       name,
       description,
       owner: req.user._id,
       members: [req.user._id],
+      tags: insertedTags.map((tag) => tag._id),
     });
 
     await community.save();
@@ -21,7 +30,7 @@ router.post("/", authenticate, async (req, res) => {
 
     res.send({ success: true, data: community });
   } catch (error) {
-    if (error.name == "ValidationError") {
+    if (error.name === "ValidationError") {
       res.send({
         success: false,
         message: Object.values(error.errors)[0].message,
@@ -32,23 +41,55 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
+router.get("/", maybeAuthenticate, async (req, res) => {
+  const communities = await Community.aggregate([
+    {
+      $project: {
+        name: 1,
+        description: 1,
+        tags: 1,
+        membersCount: { $size: "$members" },
+        isMember: { $in: [req.user?._id, "$members"] },
+      },
+    },
+  ]);
+
+  res.send({ success: true, data: communities });
+});
+
+router.get("/joined", authenticate, async (req, res) => {
+  const user = await req.user.populate({
+    path: "joinedCommunities",
+    select: "_id name",
+  });
+
+  res.send({ success: true, data: user.joinedCommunities });
+});
+
 router.get("/:name", maybeAuthenticate, async (req, res) => {
   const { name } = req.params;
-  const community = await Community.findOne({ name: name });
+  const community = await Community.aggregate([
+    {
+      $match: { name: name },
+    },
+    {
+      $project: {
+        name: 1,
+        description: 1,
+        tags: 1,
+        membersCount: { $size: "$members" },
+        isMember: { $in: [req.user?._id, "$members"] },
+        isOwner: { $eq: ["$owner", req.user?._id] },
+      },
+    },
+  ]);
 
-  if (!community) {
+  if (community.length === 0) {
     res.send({ success: false, message: "No such community" });
     return;
   }
 
-  let isMember = false;
-  let isOwner = false;
-  if (req.user) {
-    isMember = req.user?.joinedCommunities?.includes(community._id);
-    isOwner = req.user?._id.toString() === community.owner.toString();
-  }
-
-  res.send({ success: true, data: { community, isMember, isOwner } });
+  res.send({ success: true, data: community[0] });
 });
 
 router.put("/:name", authenticate, async (req, res) => {
@@ -67,6 +108,7 @@ router.put("/:name", authenticate, async (req, res) => {
 
   community.name = req.body.name;
   community.description = req.body.description;
+  community.tags = req.body.tags;
 
   await community.save();
 
