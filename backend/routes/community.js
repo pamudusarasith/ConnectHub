@@ -44,9 +44,6 @@ router.post("/", authenticate, async (req, res) => {
 router.get("/", maybeAuthenticate, async (req, res) => {
   const communities = await Community.aggregate([
     {
-      $limit: 10,
-    },
-    {
       $project: {
         name: 1,
         description: 1,
