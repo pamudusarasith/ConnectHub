@@ -31,7 +31,6 @@ router.get("/", maybeAuthenticate, async (req, res) => {
     return {
       ...post,
       author: post.author[0],
-      isLiked: req.user?.likedPosts.includes(post._id) || false,
     };
   });
 
@@ -81,24 +80,52 @@ router.get("/:id", maybeAuthenticate, async (req, res) => {
 router.get("/community/:name", maybeAuthenticate, async (req, res) => {
   const { name } = req.params;
 
-  let community = await Community.find({name}).populate({
-    path: "posts",
-    populate: { path: "author", select: "firstName lastName username" },
-  });
+  let community = await Community.aggregate([
+    {
+      $match: { name: name },
+    },
+    {
+      $lookup: {
+        from: "posts",
+        localField: "posts",
+        foreignField: "_id",
+        as: "posts",
+        pipeline: [
+          {
+            $addFields: {
+              likesCount: { $size: "$likes" },
+              isLiked: {
+                $in: [req.user?._id, "$likes"],
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "author",
+              foreignField: "_id",
+              as: "author",
+              pipeline: [
+                { $project: { firstName: 1, lastName: 1, username: 1 } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ]);
 
-  if (!community) {
+  if (community.length === 0) {
     return res.status(404).json({ error: "No such community" });
   }
-  community = community[0]
-  
-  let posts = community.posts.map((p) => p.toJSON());
-  posts = posts.map((post) => {
+  community = community[0];
+  let posts = community.posts.map((post) => {
     return {
       ...post,
-      isLiked: req.user?.likedPosts.includes(post._id) || false,
-      isOwner: req.user?._id.toString() === post.author._id.toString() || false,
+      author: post.author[0],
     };
   });
+
   res.status(200).json(posts);
 });
 
