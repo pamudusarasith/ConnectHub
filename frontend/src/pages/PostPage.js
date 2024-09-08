@@ -25,6 +25,7 @@ function PostPage() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,9 +33,10 @@ function PostPage() {
       if (res.status === 200) {
         setPost(res.data);
         setLiked(res.data.isLiked);
+        setLikesCount(res.data.likesCount);
       }
     });
-  }, []);
+  }, [id]);
 
   const [anchorE1, setAnchorE1] = useState(null);
   const [openPostForm, setOpenPostForm] = useState(false);
@@ -45,6 +47,7 @@ function PostPage() {
   const handelLike = () => {
     axios.post("/api/post/" + post._id + "/like").then((res) => {
       if (res.data.success) {
+        setLikesCount(liked ? likesCount - 1 : likesCount + 1);
         setLiked(!liked);
       } else if (res.data.code === 401) {
         navigate("/login");
@@ -65,14 +68,11 @@ function PostPage() {
   };
 
   const handelDeleteClick = async () => {
-   axios.delete(`/api/post/`+post._id).then((res) => {
-    if (res.status === 200) {
-      window.location.reload();
-    }
-   })
-    
-
-  
+    axios.delete(`/api/post/` + post._id).then((res) => {
+      if (res.status === 200) {
+        window.location.reload();
+      }
+    });
   };
 
   const formatDate = (dateString) => {
@@ -88,13 +88,12 @@ function PostPage() {
   };
 
   return (
-
     <Container maxWidth="md" sx={{ mt: 5 }}>
-      <Card sx={{ maxWidth: "100%",borderRadius:"8px" }} raised>
+      <Card sx={{ maxWidth: "100%", borderRadius: "8px" }} raised>
         <CardHeader
           avatar={
             <Stack direction="row" alignItems={"center"} spacing={4}>
-              <Avatar aria-label="recipe" sx={{bgcolor:"#424242"}}>
+              <Avatar aria-label="recipe" sx={{ bgcolor: "#424242" }}>
                 {post?.author.firstName[0] + post?.author.lastName[0]}
               </Avatar>
               <Typography>{post?.author.username}</Typography>
@@ -128,12 +127,15 @@ function PostPage() {
           >
             <ThumbUp />
           </IconButton>
+          <Typography>{likesCount}</Typography>
           <IconButton aria-label="comment" onClick={handelCommentOpen}>
             <CommentICON />
           </IconButton>
-          {post?.isOwner &&<IconButton aria-label="more" onClick={handelMenuOpen}>
-            <MoreVert />
-            </IconButton>}
+          {post?.isOwner && (
+            <IconButton aria-label="more" onClick={handelMenuOpen}>
+              <MoreVert />
+            </IconButton>
+          )}
           <Menu
             anchorEl={anchorE1}
             open={Boolean(anchorE1)}
