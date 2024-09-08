@@ -20,7 +20,7 @@ function HomePage() {
   }, []);
   return (
     <Container maxWidth="md" sx={{ mt: 3, mb: 3 }}>
-      
+      <CommunityCarousel />
       <Grid container spacing={7} sx={{ mt: 2 }}>
         {posts?.map((post, index) => (
           <Grid item xs={20} key={index}>

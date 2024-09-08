@@ -15,11 +15,16 @@ import PostPage from "./pages/PostPage";
 import UserProfile from "./pages/UserProfile";
 
 function App() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [isLoggedIn, setIsLoggedIn] = useState(
     localStorage.getItem("token") !== null
   );
   setAuthHeader();
+
+  const setThemeHelper = (theme) => {
+    localStorage.setItem("theme", theme);
+    setTheme(theme);
+  }
 
   return (
     <LoginStateCtx.Provider value={{ isLoggedIn, setIsLoggedIn }}>
@@ -27,7 +32,7 @@ function App() {
         <div className="App">
           <CssBaseline />
           <BrowserRouter>
-            <NavBar theme={theme} setTheme={setTheme} />
+            <NavBar theme={theme} setTheme={setThemeHelper} />
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/register" element={<RegisterPage />} />
