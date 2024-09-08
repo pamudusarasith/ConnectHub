@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import CreateNewBtn from "./CreateNewBtn";
 import { jwtDecode } from "jwt-decode";
 import SideBar from "./SideBar.js";
+import ProfileMenuBtn from "./ProfileMenuBtn.js";
 
 function NavBar({ theme, setTheme }) {
   const navigate = useNavigate();
@@ -62,17 +63,18 @@ function NavBar({ theme, setTheme }) {
               <RoundButton component={NavLink} to="/register">
                 Sign Up
               </RoundButton>
+              <IconButton onClick={handleThemeChange}>
+                {theme === "light" ? <DarkModeRounded /> : <LightModeRounded />}
+              </IconButton>
             </>
           )}
           {isLoggedIn && (
             <>
               <CreateNewBtn />
               <RoundButton onClick={logout}>Log Out</RoundButton>
+              <ProfileMenuBtn setTheme={setTheme} />
             </>
           )}
-          <IconButton onClick={handleThemeChange}>
-            {theme === "light" ? <DarkModeRounded /> : <LightModeRounded />}
-          </IconButton>
           <SideBar open={open} setOpen={setOpen} />
         </Stack>
       </Stack>
