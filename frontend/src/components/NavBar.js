@@ -9,14 +9,12 @@ import { NavLink } from "react-router-dom";
 import { RoundButton } from "./common";
 import { useState, useContext } from "react";
 import { LoginStateCtx } from "../Contexts";
-import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import SideBar from "./SideBar.js";
 import ProfileMenuBtn from "./ProfileMenuBtn.js";
 import CommunityForm from "./CommunityForm.js";
 
 function NavBar({ theme, setTheme }) {
-  const navigate = useNavigate();
   const { isLoggedIn, setIsLoggedIn } = useContext(LoginStateCtx);
   const [openSidebar, setOpenSidebar] = useState(false);
   const [openCommunityForm, setOpenCommunityForm] = useState(false);
@@ -24,12 +22,6 @@ function NavBar({ theme, setTheme }) {
   const handleThemeChange = () => {
     if (theme === "light") setTheme("dark");
     else setTheme("light");
-  };
-
-  const logout = () => {
-    setIsLoggedIn(false);
-    localStorage.removeItem("token");
-    navigate("/");
   };
 
   if (isLoggedIn) {
@@ -79,7 +71,6 @@ function NavBar({ theme, setTheme }) {
                 <AddRounded />
                 <Typography variant="button">Community</Typography>
               </RoundButton>
-              {/* <RoundButton onClick={logout}>Log Out</RoundButton> */}
               <ProfileMenuBtn theme={theme} setTheme={setTheme} />
             </>
           )}
