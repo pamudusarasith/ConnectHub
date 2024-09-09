@@ -5,6 +5,7 @@ import {
   Grid2 as Grid,
   Stack,
   Dialog,
+  Chip,
 } from "@mui/material";
 import axios from "axios";
 import { useState, useEffect, useContext } from "react";
@@ -96,6 +97,16 @@ function CommunityPage() {
                   </RoundButton>
                 )}
               </Stack>
+              <Box sx={{ mt: 2, display: "flex" }}>
+                {data?.tags?.map((tag, index) => (
+                  <Chip
+                    key={index}
+                    label={tag}
+                    sx={{ mr: 1, mb: 1, backgroundColor: "primary.main" }}
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
               <Dialog open={openPost} onClose={() => setOpenPost(false)}>
                 <PostForm setOpen={setOpenPost} />
               </Dialog>

@@ -37,6 +37,7 @@ function CommunityForm({ data, setOpen }) {
       if (res.data.success) {
         setOpen(false);
         navigate(`/community/${formData.name}`);
+        window.location.reload();
       } else if (res.data.code === 401) {
         setOpen(false);
         setIsLoggedIn(false);
