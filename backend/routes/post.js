@@ -56,6 +56,9 @@ router.get("/:id", maybeAuthenticate, async (req, res) => {
         isLiked: {
           $in: [req.user?._id, "$likes"],
         },
+        isOwner: {
+          $eq: [req.user?._id, "$author"],
+        },
       },
     },
     {
