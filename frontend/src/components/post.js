@@ -41,16 +41,16 @@ function Post({ post }) {
 
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
-
+  console.log(post)
   return (
     <Card sx={{ maxWidth: "100%", borderRadius: "8px" }} raised>
       <CardHeader
         avatar={
           <Stack direction="row" alignItems={"center"} spacing={4}>
             <Avatar aria-label="recipe" sx={{ bgcolor: "#424242" }}>
-              {post?.author.firstName[0] + post?.author.lastName[0]}
+              {post?.author?.firstName[0] + post?.author?.lastName[0]}
             </Avatar>
-            <Typography>{post?.author.username}</Typography>
+            <Typography>{post?.author?.username}</Typography>
             <Typography variant="subtitle2">
               {formatDate(post?.createdAt)}
             </Typography>

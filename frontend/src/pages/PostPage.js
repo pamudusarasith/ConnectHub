@@ -70,7 +70,7 @@ function PostPage() {
   const handelDeleteClick = async () => {
     axios.delete(`/api/post/` + post._id).then((res) => {
       if (res.status === 200) {
-        window.location.reload();
+        navigate("/");
       }
     });
   };

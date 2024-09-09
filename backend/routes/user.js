@@ -53,7 +53,7 @@ router.put("/", authenticate, async (req, res) => {
       if (!isPasswordValid) {
         return res.status(400).send({ success: false, message: "Old password is incorrect" });
       }
-      user.password = await bcrypt.hash(password, 10);
+      user.password = password;
     }
 
     // Save the updated user back to the database

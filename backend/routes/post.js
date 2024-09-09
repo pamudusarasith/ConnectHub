@@ -56,6 +56,9 @@ router.get("/:id", maybeAuthenticate, async (req, res) => {
         isLiked: {
           $in: [req.user?._id, "$likes"],
         },
+        isOwner: {
+          $eq: [req.user?._id, "$author"],
+        },
       },
     },
     {
@@ -96,6 +99,9 @@ router.get("/community/:name", maybeAuthenticate, async (req, res) => {
               likesCount: { $size: "$likes" },
               isLiked: {
                 $in: [req.user?._id, "$likes"],
+              },
+              isOwner: {
+                $eq: [req.user?._id, "$author"],
               },
             },
           },
@@ -161,7 +167,7 @@ router.delete("/:id", authenticate, async (req, res) => {
     return res.status(400).json({ error: "No such post" });
   }
 
-  if (post.author !== req.user._id)
+  if (post.author.toString() !== req.user._id.toString())
     return res.status(400).json({ error: "Unauthorized" });
 
   post = await Post.findOneAndDelete({ _id: id });

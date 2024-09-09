@@ -79,7 +79,7 @@ function NavBar({ theme, setTheme }) {
                 <AddRounded />
                 <Typography variant="button">Community</Typography>
               </RoundButton>
-              <RoundButton onClick={logout}>Log Out</RoundButton>
+              {/* <RoundButton onClick={logout}>Log Out</RoundButton> */}
               <ProfileMenuBtn theme={theme} setTheme={setTheme} />
             </>
           )}

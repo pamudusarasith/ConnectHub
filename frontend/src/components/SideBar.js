@@ -42,7 +42,8 @@ function SideBar({ open, setOpen }) {
                 {data?.map((community, i) => (
                   <Button
                     key={i}
-                    onClick={() => navigate(`/community/${community.name}`)}
+                    // onClick={() => navigate(`/community/${community.name}`)}
+                    href={`/community/${community.name}`}
                   >
                     {community.name}
                   </Button>
