@@ -154,7 +154,7 @@ function Comment({ openComment, setOpenComment }) {
             <div style={{ display: "flex", alignItems: "center" }}>
               <Avatar src="/broken-image.jpg" />
               <span style={{ marginLeft: "10px", fontWeight: "bold" }}>
-                {text.author.username}
+                {text?.author?.username}
               </span>
               {text.createdAt && (
                 <span style={{ marginLeft: "10px", color: "#888" }}>
