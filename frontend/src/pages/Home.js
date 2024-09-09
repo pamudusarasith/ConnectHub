@@ -12,7 +12,7 @@ function HomePage() {
       const response = await axios.get("/api/post");
 
       if (response.data.success) {
-        setPosts(response.data.data);
+        setPosts(response.data.data.reverse());
       }
     };
 
