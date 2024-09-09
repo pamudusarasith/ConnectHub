@@ -8,9 +8,9 @@ import { LoginStateCtx } from "../Contexts";
 function CommunityForm({ data, setOpen }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: data?.community.name || "",
-    description: data?.community.description || "",
-    tags: data?.community.tags || [], // Initialize tags
+    name: data?.name || "",
+    description: data?.description || "",
+    tags: data?.tags || [],
   });
   const [tagInput, setTagInput] = useState("");
   const [error, setError] = useState("");
@@ -33,7 +33,7 @@ function CommunityForm({ data, setOpen }) {
   };
 
   const handleEdit = () => {
-    axios.put(`/api/community/${data.community.name}`, formData).then((res) => {
+    axios.put(`/api/community/${data.name}`, formData).then((res) => {
       if (res.data.success) {
         setOpen(false);
         navigate(`/community/${formData.name}`);

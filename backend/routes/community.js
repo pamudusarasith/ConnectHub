@@ -68,18 +68,24 @@ router.get("/joined", authenticate, async (req, res) => {
 
 router.get("/:name", maybeAuthenticate, async (req, res) => {
   const { name } = req.params;
-  const community = await Community.aggregate([
+  let community = await Community.aggregate([
     {
       $match: { name: name },
     },
     {
-      $project: {
-        name: 1,
-        description: 1,
-        tags: 1,
+      $addFields: {
         membersCount: { $size: "$members" },
         isMember: { $in: [req.user?._id, "$members"] },
         isOwner: { $eq: ["$owner", req.user?._id] },
+      },
+    },
+    {
+      $lookup: {
+        from: "tags",
+        localField: "tags",
+        foreignField: "_id",
+        as: "tags",
+        pipeline: [{ $project: { _id: 0, name: 1 } }],
       },
     },
   ]);
@@ -88,8 +94,9 @@ router.get("/:name", maybeAuthenticate, async (req, res) => {
     res.send({ success: false, message: "No such community" });
     return;
   }
-
-  res.send({ success: true, data: community[0] });
+  community = community[0];
+  community.tags = community.tags.map((tag) => tag.name);
+  res.send({ success: true, data: community });
 });
 
 router.put("/:name", authenticate, async (req, res) => {
@@ -106,9 +113,15 @@ router.put("/:name", authenticate, async (req, res) => {
     return;
   }
 
+  const insertedTags = await Tag.insertMany(
+    req.body.tags.map((tn) => {
+      return { name: tn };
+    })
+  );
+
   community.name = req.body.name;
   community.description = req.body.description;
-  community.tags = req.body.tags;
+  community.tags = insertedTags;
 
   await community.save();
 
