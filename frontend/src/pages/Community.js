@@ -16,7 +16,6 @@ import { LoginStateCtx } from "../Contexts";
 import CommunityMenuBtn from "../components/CommunityMenuBtn.js";
 import PostForm from "../components/PostForm.js";
 import Post from "../components/post.js";
-import CommunityCarousel from "../components/CommunityCarousel";
 
 function CommunityPage() {
   const { isLoggedIn } = useContext(LoginStateCtx);
